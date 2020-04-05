@@ -19,10 +19,12 @@ def test_file_with_blank_lines(blank_lines):
 @pytest.mark.parametrize('blank_cells', range(1, 3))
 def test_notebook_with_empty_cells(blank_cells):
     notebook = new_notebook(cells=[new_markdown_cell('markdown cell one')] +
-                                  [new_code_cell('')] * blank_cells +
-                                  [new_markdown_cell('markdown cell two')] +
-                                  [new_code_cell('')] * blank_cells,
-                            metadata={'jupytext': {'main_language': 'python'}})
+                            [new_code_cell('')] * blank_cells +
+                            [new_markdown_cell('markdown cell two')] +
+                            [new_code_cell('')] * blank_cells,
+                            metadata={'jupytext': {
+                                'main_language': 'python'
+                            }})
 
     script = jupytext.writes(notebook, 'py')
     notebook2 = jupytext.reads(script, 'py')

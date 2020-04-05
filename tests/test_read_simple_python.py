@@ -64,10 +64,10 @@ def h(y):
     assert nb.cells[1].source == 'Here we have some text\n' \
                                  'And below we have some python code'
     assert nb.cells[2].cell_type == 'code'
-    compare(nb.cells[2].source,
-            '# This is a comment about function f\n'
-            'def f(x):\n'
-            '    return x+1')
+    compare(
+        nb.cells[2].source, '# This is a comment about function f\n'
+        'def f(x):\n'
+        '    return x+1')
     assert nb.cells[3].cell_type == 'code'
     compare(nb.cells[3].source,
             '''# And a comment on h\ndef h(y):\n    return y-1''')
@@ -76,7 +76,8 @@ def h(y):
     compare(pynb2, pynb)
 
 
-def test_indented_comment(text="""def f():
+def test_indented_comment(
+    text="""def f():
     return 1
 
     # f returns 1
@@ -89,28 +90,35 @@ def g():
 # h returns 3
 def h():
     return 3
-""", ref=new_notebook(cells=[new_code_cell("""def f():
+""",
+    ref=new_notebook(cells=[
+        new_code_cell("""def f():
     return 1
 
     # f returns 1"""),
-                             new_code_cell('def g():\n    return 2'),
-                             new_code_cell('# h returns 3\ndef h():\n    return 3')])):
+        new_code_cell('def g():\n    return 2'),
+        new_code_cell('# h returns 3\ndef h():\n    return 3')
+    ])):
     nb = jupytext.reads(text, 'py')
     compare_notebooks(nb, ref)
     py = jupytext.writes(nb, 'py')
     compare(py, text)
 
 
-def test_non_pep8(text="""def f():
+def test_non_pep8(
+    text="""def f():
     return 1
 def g():
     return 2
 
 def h():
     return 3
-""", ref=new_notebook(
-    cells=[new_code_cell('def f():\n    return 1\ndef g():\n    return 2', metadata={'lines_to_next_cell': 1}),
-           new_code_cell('def h():\n    return 3')])):
+""",
+    ref=new_notebook(cells=[
+        new_code_cell('def f():\n    return 1\ndef g():\n    return 2',
+                      metadata={'lines_to_next_cell': 1}),
+        new_code_cell('def h():\n    return 3')
+    ])):
     nb = jupytext.reads(text, 'py')
     compare_notebooks(nb, ref)
     py = jupytext.writes(nb, 'py')
@@ -140,9 +148,7 @@ def f(x):
                                  'two consecutive blank lines ' \
                                  'in its body'
     assert nb.cells[2].cell_type == 'code'
-    compare(nb.cells[2].source,
-            'def f(x):\n\n\n'
-            '    return x+1')
+    compare(nb.cells[2].source, 'def f(x):\n\n\n' '    return x+1')
 
     pynb2 = jupytext.writes(nb, 'py')
     compare(pynb2, pynb)
@@ -221,8 +227,8 @@ data2()
     assert nb.cells[2].cell_type == 'code'
     assert nb.cells[3].cell_type == 'code'
     assert nb.cells[4].cell_type == 'code'
-    assert (nb.cells[3].source ==
-            '''# Finally we have a cell with only comments
+    assert (
+        nb.cells[3].source == '''# Finally we have a cell with only comments
 # This cell should remain a code cell and not get converted
 # to markdown''')
     assert (nb.cells[4].source ==
@@ -237,7 +243,7 @@ data2()
 
 
 def test_read_prev_function(
-        pynb="""def test_read_cell_explicit_start_end(pynb='''
+    pynb="""def test_read_cell_explicit_start_end(pynb='''
 import pandas as pd
 # +
 def data():
@@ -365,7 +371,7 @@ def test_escape_start_pattern(pynb="""# The code start pattern '# +' can
 
 
 def test_dictionary_with_blank_lines_not_broken(
-        pynb="""# This is a markdown cell, and below
+    pynb="""# This is a markdown cell, and below
 # we have a long dictionary with blank lines
 # inside it
 
@@ -430,7 +436,8 @@ def test_isolated_cell_with_magic(pynb="""# ---
     compare(pynb2, pynb)
 
 
-def test_ipython_help_are_commented_297(text="""# This is a markdown cell
+def test_ipython_help_are_commented_297(
+    text="""# This is a markdown cell
 # that ends with a question: float?
 
 # The next cell is also a markdown cell,
@@ -447,14 +454,18 @@ def test_ipython_help_are_commented_297(text="""# This is a markdown cell
 # +
 # Finally a question in a code
 # # cell?
-""", nb=new_notebook(
-    cells=[
-        new_markdown_cell('This is a markdown cell\nthat ends with a question: float?'),
-        new_markdown_cell('The next cell is also a markdown cell,\nbecause it has no code marker:'),
+""",
+    nb=new_notebook(cells=[
+        new_markdown_cell(
+            'This is a markdown cell\nthat ends with a question: float?'),
+        new_markdown_cell(
+            'The next cell is also a markdown cell,\nbecause it has no code marker:'
+        ),
         new_markdown_cell('float?'),
         new_code_cell('float?'),
         new_code_cell('float??'),
-        new_code_cell('# Finally a question in a code\n# cell?')])):
+        new_code_cell('# Finally a question in a code\n# cell?')
+    ])):
     nb2 = jupytext.reads(text, 'py')
     compare_notebooks(nb2, nb)
 
@@ -462,11 +473,15 @@ def test_ipython_help_are_commented_297(text="""# This is a markdown cell
     compare(text2, text)
 
 
-def test_questions_in_unmarked_cells_are_not_uncommented_297(text="""# This cell has no explicit marker
+def test_questions_in_unmarked_cells_are_not_uncommented_297(
+    text="""# This cell has no explicit marker
 # question?
 1 + 2
-""", nb=new_notebook(cells=[new_code_cell('# This cell has no explicit marker\n# question?\n1 + 2',
-                                          metadata={'comment_questions': False})])):
+""",
+    nb=new_notebook(cells=[
+        new_code_cell('# This cell has no explicit marker\n# question?\n1 + 2',
+                      metadata={'comment_questions': False})
+    ])):
     nb2 = jupytext.reads(text, 'py')
     compare_notebooks(nb2, nb)
 
@@ -534,7 +549,8 @@ print('Hello world')
     compare(pynb2, pynb)
 
 
-def test_read_write_script_with_metadata_241(no_jupytext_version_number, pynb="""#!/usr/bin/env python3
+def test_read_write_script_with_metadata_241(no_jupytext_version_number,
+                                             pynb="""#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ---
 # jupyter:
@@ -696,7 +712,8 @@ def j(x):
     compare(script2, script)
 
 
-def test_notebook_with_magic_and_bash_cells(script="""# This is a test for issue #181
+def test_notebook_with_magic_and_bash_cells(
+    script="""# This is a test for issue #181
 
 # %load_ext line_profiler
 
@@ -714,15 +731,16 @@ def test_notebook_with_magic_and_bash_cells(script="""# This is a test for issue
     compare(script2, script)
 
 
-def test_notebook_no_line_to_next_cell(nb=new_notebook(
-    cells=[new_markdown_cell('Markdown cell #1'),
-           new_code_cell('%load_ext line_profiler'),
-           new_markdown_cell('Markdown cell #2'),
-           new_code_cell('%lprun -f ...'),
-           new_markdown_cell('Markdown cell #3'),
-           new_code_cell('# And a function!\n'
-                         'def f(x):\n'
-                         '    return 5')])):
+def test_notebook_no_line_to_next_cell(nb=new_notebook(cells=[
+    new_markdown_cell('Markdown cell #1'),
+    new_code_cell('%load_ext line_profiler'),
+    new_markdown_cell('Markdown cell #2'),
+    new_code_cell('%lprun -f ...'),
+    new_markdown_cell('Markdown cell #3'),
+    new_code_cell('# And a function!\n'
+                  'def f(x):\n'
+                  '    return 5')
+])):
     script = jupytext.writes(nb, 'py')
     nb2 = jupytext.reads(script, 'py')
     nb2.metadata.pop('jupytext')
@@ -730,7 +748,8 @@ def test_notebook_no_line_to_next_cell(nb=new_notebook(
     compare(nb2, nb)
 
 
-def test_notebook_one_blank_line_before_first_markdown_cell(script="""
+def test_notebook_one_blank_line_before_first_markdown_cell(
+    script="""
 # This is a markdown cell
 
 1 + 1
@@ -748,7 +767,7 @@ def test_notebook_one_blank_line_before_first_markdown_cell(script="""
 
 
 def test_read_markdown_cell_with_triple_quote_307(
-        script="""# This script test that commented triple quotes '''
+    script="""# This script test that commented triple quotes '''
 # do not impede the correct identification of Markdown cells
 
 # Here is Markdown cell number 2 '''
@@ -756,7 +775,8 @@ def test_read_markdown_cell_with_triple_quote_307(
     notebook = jupytext.reads(script, 'py')
     assert len(notebook.cells) == 2
     assert notebook.cells[0].cell_type == 'markdown'
-    assert notebook.cells[0].source == """This script test that commented triple quotes '''
+    assert notebook.cells[
+        0].source == """This script test that commented triple quotes '''
 do not impede the correct identification of Markdown cells"""
     assert notebook.cells[1].cell_type == 'markdown'
     assert notebook.cells[1].source == "Here is Markdown cell number 2 '''"
@@ -767,7 +787,7 @@ do not impede the correct identification of Markdown cells"""
 
 @skip_if_dict_is_not_ordered
 def test_read_explicit_markdown_cell_with_triple_quote_307(
-        script="""# {{{ [md] {"special": "metadata"}
+    script="""# {{{ [md] {"special": "metadata"}
 # some text '''
 # }}}
 
@@ -791,57 +811,84 @@ print('hello world')
 
 
 def test_round_trip_markdown_cell_with_magic():
-    notebook = new_notebook(cells=[new_markdown_cell('IPython has magic commands like\n%quickref')],
-                            metadata={'jupytext': {'main_language': 'python'}})
+    notebook = new_notebook(cells=[
+        new_markdown_cell('IPython has magic commands like\n%quickref')
+    ],
+                            metadata={'jupytext': {
+                                'main_language': 'python'
+                            }})
     text = jupytext.writes(notebook, 'py')
     notebook2 = jupytext.reads(text, 'py')
     compare_notebooks(notebook2, notebook)
 
 
 def test_round_trip_python_with_js_cell():
-    notebook = new_notebook(cells=[new_code_cell('''import notebook.nbextensions
+    notebook = new_notebook(cells=[
+        new_code_cell('''import notebook.nbextensions
 notebook.nbextensions.install_nbextension('jupytext.js', user=True)'''),
-                                   new_code_cell('''%%javascript
-Jupyter.utils.load_extensions('jupytext')''')])
+        new_code_cell('''%%javascript
+Jupyter.utils.load_extensions('jupytext')''')
+    ])
     text = jupytext.writes(notebook, 'py')
     notebook2 = jupytext.reads(text, 'py')
     compare_notebooks(notebook2, notebook)
 
 
 def test_round_trip_python_with_js_cell_no_cell_metadata():
-    notebook = new_notebook(cells=[new_code_cell('''import notebook.nbextensions
+    notebook = new_notebook(cells=[
+        new_code_cell('''import notebook.nbextensions
 notebook.nbextensions.install_nbextension('jupytext.js', user=True)'''),
-                                   new_code_cell('''%%javascript
-Jupyter.utils.load_extensions('jupytext')''')],
-                            metadata={'jupytext': {'notebook_metadata_filter': '-all',
-                                                   'cell_metadata_filter': '-all'}})
+        new_code_cell('''%%javascript
+Jupyter.utils.load_extensions('jupytext')''')
+    ],
+                            metadata={
+                                'jupytext': {
+                                    'notebook_metadata_filter': '-all',
+                                    'cell_metadata_filter': '-all'
+                                }
+                            })
     text = jupytext.writes(notebook, 'py')
     notebook2 = jupytext.reads(text, 'py')
     compare_notebooks(notebook2, notebook)
 
 
 @skip_if_dict_is_not_ordered
-def test_raw_with_metadata(no_jupytext_version_number, text="""# + key="value" active=""
+def test_raw_with_metadata(
+    no_jupytext_version_number,
+    text="""# + key="value" active=""
 # Raw cell
 # # Commented line
-""", notebook=new_notebook(cells=[new_raw_cell('Raw cell\n# Commented line', metadata={'key': 'value'})])):
+""",
+    notebook=new_notebook(cells=[
+        new_raw_cell('Raw cell\n# Commented line', metadata={'key': 'value'})
+    ])):
     nb2 = jupytext.reads(text, 'py')
     compare_notebooks(nb2, notebook)
     text2 = jupytext.writes(notebook, 'py')
     compare(text2, text)
 
 
-def test_raw_with_metadata_2(no_jupytext_version_number, text="""# + [raw] key="value"
+def test_raw_with_metadata_2(
+    no_jupytext_version_number,
+    text="""# + [raw] key="value"
 # Raw cell
 # # Commented line
-""", notebook=new_notebook(cells=[new_raw_cell('Raw cell\n# Commented line', metadata={'key': 'value'})])):
+""",
+    notebook=new_notebook(cells=[
+        new_raw_cell('Raw cell\n# Commented line', metadata={'key': 'value'})
+    ])):
     nb2 = jupytext.reads(text, 'py')
     compare_notebooks(nb2, notebook)
 
 
-def test_markdown_with_metadata(no_jupytext_version_number, text="""# + [markdown] key="value"
+def test_markdown_with_metadata(
+    no_jupytext_version_number,
+    text="""# + [markdown] key="value"
 # Markdown cell
-""", notebook=new_notebook(cells=[new_markdown_cell('Markdown cell', metadata={'key': 'value'})])):
+""",
+    notebook=new_notebook(
+        cells=[new_markdown_cell('Markdown cell', metadata={'key': 'value'})
+               ])):
     nb2 = jupytext.reads(text, 'py')
     compare_notebooks(nb2, notebook)
     text2 = jupytext.writes(notebook, 'py')
@@ -907,7 +954,8 @@ cell"""
     assert nb.cells[0].source == "a\nlong\ncell"
 
 
-def test_multiline_comments_in_markdown_cell_is_robust_to_additional_cell_marker():
+def test_multiline_comments_in_markdown_cell_is_robust_to_additional_cell_marker(
+):
     text = '''# + [md]
 """
 some text, and a fake cell marker
@@ -922,15 +970,18 @@ some text, and a fake cell marker
     compare(py, text)
 
 
-def test_active_tag(
-        text='''# + tags=["active-py"]
+def test_active_tag(text='''# + tags=["active-py"]
 interpreter = 'python'
 
 # + tags=["active-ipynb"]
 # interpreter = 'ipython'
-''', ref=new_notebook(cells=[
-            new_raw_cell("interpreter = 'python'", metadata={'tags': ['active-py']}),
-            new_code_cell("interpreter = 'ipython'", metadata={'tags': ['active-ipynb']})])):
+''',
+                    ref=new_notebook(cells=[
+                        new_raw_cell("interpreter = 'python'",
+                                     metadata={'tags': ['active-py']}),
+                        new_code_cell("interpreter = 'ipython'",
+                                      metadata={'tags': ['active-ipynb']})
+                    ])):
     nb = jupytext.reads(text, 'py')
     compare_notebooks(nb, ref)
     py = jupytext.writes(nb, 'py')
@@ -938,19 +989,19 @@ interpreter = 'python'
 
 
 def test_indented_bash_command(no_jupytext_version_number,
-                               nb=new_notebook(cells=[new_code_cell("""try:
+                               nb=new_notebook(cells=[
+                                   new_code_cell("""try:
     !echo jo
     pass
 except:
-    pass""")]),
+    pass""")
+                               ]),
                                text="""try:
 #     !echo jo
     pass
 except:
     pass
-"""
-
-                               ):
+"""):
     """Reproduces https://github.com/mwouts/jupytext/issues/437"""
     py = jupytext.writes(nb, 'py')
     compare(py, text)
@@ -959,7 +1010,8 @@ except:
 
 
 def test_two_raw_cells_are_preserved(
-        nb=new_notebook(cells=[new_raw_cell("---\nX\n---"), new_raw_cell("Y")])):
+    nb=new_notebook(cells=[new_raw_cell("---\nX\n---"),
+                           new_raw_cell("Y")])):
     """Test the pattern described at https://github.com/mwouts/jupytext/issues/466"""
     py = jupytext.writes(nb, 'py')
     nb2 = jupytext.reads(py, 'py')

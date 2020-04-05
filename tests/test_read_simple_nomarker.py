@@ -21,7 +21,9 @@ def test_write_reload_simple_notebook():
 
 def h(x):
     return x
-""", metadata={'md': 'value'})])
+""",
+                      metadata={'md': 'value'})
+    ])
 
     text = writes(nb1, 'py:nomarker')
     nb2 = reads(text, 'py:nomarker')

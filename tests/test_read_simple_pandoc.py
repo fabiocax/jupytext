@@ -52,9 +52,11 @@ This is the greek letter $\\pi$: π
 
 
 @requires_pandoc
-def test_pandoc_utf8_in_nb(nb=new_notebook(cells=[new_markdown_cell('''# Utf-8 support
+def test_pandoc_utf8_in_nb(nb=new_notebook(cells=[
+    new_markdown_cell('''# Utf-8 support
 
-This is the greek letter $\\pi$: π''')])):
+This is the greek letter $\\pi$: π''')
+])):
     markdown = jupytext.writes(nb, 'md:pandoc')
     nb2 = jupytext.reads(markdown, 'md:pandoc')
     nb2.metadata.pop('jupytext')

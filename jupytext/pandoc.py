@@ -27,7 +27,8 @@ def pandoc(args, filein=None, fileout=None):
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode:
-        raise PandocError('pandoc exited with return code {}\n{}'.format(proc.returncode, str(err)))
+        raise PandocError('pandoc exited with return code {}\n{}'.format(
+            proc.returncode, str(err)))
     return out.decode('utf-8')
 
 
@@ -50,7 +51,8 @@ def pandoc_version():
         raise PandocError('Please install pkg_resources')
 
     if parse_version(version) < parse_version('2.7.2'):
-        raise PandocError('Please install pandoc>=2.7.2 (found version {})'.format(version))
+        raise PandocError(
+            'Please install pandoc>=2.7.2 (found version {})'.format(version))
 
     return version
 
@@ -61,7 +63,9 @@ def md_to_notebook(text):
     tmp_file.write(text.encode('utf-8'))
     tmp_file.close()
 
-    pandoc(u'--from markdown --to ipynb -s --atx-headers --wrap=preserve --preserve-tabs', tmp_file.name, tmp_file.name)
+    pandoc(
+        u'--from markdown --to ipynb -s --atx-headers --wrap=preserve --preserve-tabs',
+        tmp_file.name, tmp_file.name)
 
     with open(tmp_file.name, encoding='utf-8') as opened_file:
         notebook = ipynb_reads(opened_file.read(), as_version=4)
@@ -76,7 +80,9 @@ def notebook_to_md(notebook):
     tmp_file.write(ipynb_writes(notebook).encode('utf-8'))
     tmp_file.close()
 
-    pandoc(u'--from ipynb --to markdown -s --atx-headers --wrap=preserve --preserve-tabs', tmp_file.name, tmp_file.name)
+    pandoc(
+        u'--from ipynb --to markdown -s --atx-headers --wrap=preserve --preserve-tabs',
+        tmp_file.name, tmp_file.name)
 
     with open(tmp_file.name, encoding='utf-8') as opened_file:
         text = opened_file.read()

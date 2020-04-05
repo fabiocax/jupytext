@@ -13,7 +13,8 @@ def test_parse_double_hyphen_metadata():
            {'incorrectly_encoded_metadata': '--key1 value1 --key2 value2'}
 
 
-def test_read_dotnet_try_markdown(md='''This is a dotnet/try Markdown file, inspired
+def test_read_dotnet_try_markdown(
+    md='''This is a dotnet/try Markdown file, inspired
 from this [post](https://devblogs.microsoft.com/dotnet/creating-interactive-net-documentation/)
 
 ``` cs --region methods --source-file .\\myapp\\Program.cs --project .\\myapp\\myapp.csproj
@@ -29,10 +30,13 @@ Console.WriteLine($"Hello {name.ToUpper()}!");
     assert nb.cells[1].cell_type == 'code'
     assert nb.cells[1].source == """var name ="Rain";
 Console.WriteLine($"Hello {name.ToUpper()}!");"""
-    compare(nb.cells[1].metadata, {
-        'language': 'cs',
-        'incorrectly_encoded_metadata':
-            '--region methods --source-file .\\myapp\\Program.cs --project .\\myapp\\myapp.csproj'})
+    compare(
+        nb.cells[1].metadata, {
+            'language':
+            'cs',
+            'incorrectly_encoded_metadata':
+            '--region methods --source-file .\\myapp\\Program.cs --project .\\myapp\\myapp.csproj'
+        })
 
     # Round trip to Markdown
     md2 = jupytext.writes(nb, 'md')

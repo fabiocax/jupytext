@@ -28,24 +28,27 @@ pub fn fib(x: i32) -> i32 {
 ::std::mem::drop
 '''):
     nb = jupytext.reads(text, 'rs')
-    compare_notebooks(nb, new_notebook(cells=[
-        new_code_cell('''println!("Hello world");
+    compare_notebooks(
+        nb,
+        new_notebook(cells=[
+            new_code_cell('''println!("Hello world");
 eprintln!("Hello error");
 format!("Hello {}", "world")'''),
-        new_code_cell('''// A Function
+            new_code_cell('''// A Function
 pub fn fib(x: i32) -> i32 {
     if x <= 2 {0} else {fib(x - 2) + fib(x - 1)}
 }'''),
-        new_markdown_cell("This is a\nMarkdown cell"),
-        new_code_cell('''// This is a magic instruction
+            new_markdown_cell("This is a\nMarkdown cell"),
+            new_code_cell('''// This is a magic instruction
 :vars'''),
-        new_code_cell('''// This is a rust identifier
+            new_code_cell('''// This is a rust identifier
 ::std::mem::drop''')
-    ]))
+        ]))
     compare(jupytext.writes(nb, 'rs'), text)
 
 
-def test_read_write_script_with_metadata_241(no_jupytext_version_number, rsnb="""#!/usr/bin/env scriptisto
+def test_read_write_script_with_metadata_241(no_jupytext_version_number,
+                                             rsnb="""#!/usr/bin/env scriptisto
 // ---
 // jupyter:
 //   jupytext:

@@ -5,10 +5,10 @@ from jupytext.cell_to_text import RMarkdownCellExporter
 
 
 def test_uncomment():
-    assert uncomment(['# line one', '#line two', 'line three'], '#') == [
-        'line one', 'line two', 'line three']
-    assert uncomment(['# line one', '#line two', 'line three'], '') == [
-        '# line one', '#line two', 'line three']
+    assert uncomment(['# line one', '#line two', 'line three'],
+                     '#') == ['line one', 'line two', 'line three']
+    assert uncomment(['# line one', '#line two', 'line three'],
+                     '') == ['# line one', '#line two', 'line three']
 
 
 def test_text_to_code_cell():

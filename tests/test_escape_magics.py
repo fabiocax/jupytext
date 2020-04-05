@@ -12,8 +12,10 @@ def test_unesc():
     assert unesc('comment', 'python') == 'comment'
 
 
-@pytest.mark.parametrize('line', ['%matplotlib inline', '#%matplotlib inline',
-                                  '##%matplotlib inline', '%%HTML', '%autoreload', '%store'])
+@pytest.mark.parametrize('line', [
+    '%matplotlib inline', '#%matplotlib inline', '##%matplotlib inline',
+    '%%HTML', '%autoreload', '%store'
+])
 def test_escape(line):
     assert comment_magic([line]) == ['# ' + line]
     assert uncomment_magic(comment_magic([line])) == [line]
@@ -40,8 +42,10 @@ def test_force_escape_with_gbl_esc_flag(line):
 
 
 @pytest.mark.parametrize('fmt,commented',
-                         zip(['md', 'Rmd', 'py:light', 'py:percent', 'py:sphinx', 'R', 'ss:light', 'ss:percent'],
-                             [False, True, True, True, True, True, True, True]))
+                         zip([
+                             'md', 'Rmd', 'py:light', 'py:percent',
+                             'py:sphinx', 'R', 'ss:light', 'ss:percent'
+                         ], [False, True, True, True, True, True, True, True]))
 def test_magics_commented_default(fmt, commented):
     nb = new_notebook(cells=[new_code_cell('%pylab inline')])
 
@@ -55,12 +59,21 @@ def test_magics_commented_default(fmt, commented):
     compare_notebooks(nb2, nb)
 
 
-@pytest.mark.parametrize('fmt', ['md', 'Rmd', 'py:light', 'py:percent', 'py:sphinx', 'R', 'ss:light', 'ss:percent'])
+@pytest.mark.parametrize('fmt', [
+    'md', 'Rmd', 'py:light', 'py:percent', 'py:sphinx', 'R', 'ss:light',
+    'ss:percent'
+])
 def test_magics_are_commented(fmt):
     nb = new_notebook(cells=[new_code_cell('%pylab inline')],
-                      metadata={'jupytext': {'comment_magics': True,
-                                             'main_language': 'R' if fmt == 'R'
-                                             else 'scheme' if fmt.startswith('ss') else 'python'}})
+                      metadata={
+                          'jupytext': {
+                              'comment_magics':
+                              True,
+                              'main_language':
+                              'R' if fmt == 'R' else
+                              'scheme' if fmt.startswith('ss') else 'python'
+                          }
+                      })
 
     text = jupytext.writes(nb, fmt)
     assert '%pylab inline' not in text.splitlines()
@@ -72,12 +85,21 @@ def test_magics_are_commented(fmt):
     compare_notebooks(nb2, nb)
 
 
-@pytest.mark.parametrize('fmt', ['md', 'Rmd', 'py:light', 'py:percent', 'py:sphinx', 'R', 'ss:light', 'ss:percent'])
+@pytest.mark.parametrize('fmt', [
+    'md', 'Rmd', 'py:light', 'py:percent', 'py:sphinx', 'R', 'ss:light',
+    'ss:percent'
+])
 def test_magics_are_not_commented(fmt):
     nb = new_notebook(cells=[new_code_cell('%pylab inline')],
-                      metadata={'jupytext': {'comment_magics': False,
-                                             'main_language': 'R' if fmt == 'R'
-                                             else 'scheme' if fmt.startswith('ss') else 'python'}})
+                      metadata={
+                          'jupytext': {
+                              'comment_magics':
+                              False,
+                              'main_language':
+                              'R' if fmt == 'R' else
+                              'scheme' if fmt.startswith('ss') else 'python'
+                          }
+                      })
 
     text = jupytext.writes(nb, fmt)
     assert '%pylab inline' in text.splitlines()
@@ -108,21 +130,26 @@ def test_force_comment_using_contents_manager(tmpdir):
         assert '%pylab inline' in stream.read().splitlines()
 
 
-@pytest.mark.parametrize('magic_cmd', ['ls', '!ls', 'ls -al', '!whoami', '# ls', '# mv a b', '! mkdir tmp',
-                                       'cat', 'cat ', 'cat hello.txt', 'cat --option=value hello.txt'])
+@pytest.mark.parametrize('magic_cmd', [
+    'ls', '!ls', 'ls -al', '!whoami', '# ls', '# mv a b', '! mkdir tmp', 'cat',
+    'cat ', 'cat hello.txt', 'cat --option=value hello.txt'
+])
 def test_comment_bash_commands_in_python(magic_cmd):
     assert comment_magic([magic_cmd]) == ['# ' + magic_cmd]
     assert uncomment_magic(['# ' + magic_cmd]) == [magic_cmd]
 
 
-@pytest.mark.parametrize('not_magic_cmd',
-                         ['copy(a)', 'copy.deepcopy', 'cat = 3', 'cat=5', 'cat, other = 5,3', 'cat(5)'])
+@pytest.mark.parametrize('not_magic_cmd', [
+    'copy(a)', 'copy.deepcopy', 'cat = 3', 'cat=5', 'cat, other = 5,3',
+    'cat(5)'
+])
 def test_do_not_comment_python_cmds(not_magic_cmd):
     assert comment_magic([not_magic_cmd]) == [not_magic_cmd]
     assert uncomment_magic([not_magic_cmd]) == [not_magic_cmd]
 
 
-@pytest.mark.parametrize('magic_cmd', ['ls', '!ls', 'ls -al', '!whoami', '# ls', '# mv a b'])
+@pytest.mark.parametrize(
+    'magic_cmd', ['ls', '!ls', 'ls -al', '!whoami', '# ls', '# mv a b'])
 def test_do_not_comment_bash_commands_in_R(magic_cmd):
     assert comment_magic([magic_cmd], language='R') == [magic_cmd]
     assert uncomment_magic([magic_cmd], language='R') == [magic_cmd]
@@ -140,15 +167,18 @@ def test_question_is_not_magic():
 
 
 def test_multiline_python_magic(no_jupytext_version_number):
-    nb = new_notebook(cells=[new_code_cell("""%load_ext watermark
+    nb = new_notebook(cells=[
+        new_code_cell("""%load_ext watermark
 %watermark -u -n -t -z \\
     -p jupytext -v
 
 def g(x):
-    return x+1""")])
+    return x+1""")
+    ])
 
     text = jupytext.writes(nb, 'py')
-    compare(text, """# +
+    compare(
+        text, """# +
 # %load_ext watermark
 # %watermark -u -n -t -z \\
 #     -p jupytext -v

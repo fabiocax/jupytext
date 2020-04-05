@@ -31,19 +31,33 @@ def kernelspec_from_language(language):
             for name in find_kernel_specs():
                 kernel_specs = get_kernel_spec(name)
                 cmd = kernel_specs.argv[0]
-                if kernel_specs.language == 'python' and os.path.isfile(cmd) and os.path.samefile(cmd, sys.executable):
-                    return {'name': name, 'language': language, 'display_name': kernel_specs.display_name}
+                if kernel_specs.language == 'python' and os.path.isfile(
+                        cmd) and os.path.samefile(cmd, sys.executable):
+                    return {
+                        'name': name,
+                        'language': language,
+                        'display_name': kernel_specs.display_name
+                    }
 
             # If none was found, return the first kernel that has 'python' as argv[0]
             for name in find_kernel_specs():
                 kernel_specs = get_kernel_spec(name)
-                if kernel_specs.language == 'python' and kernel_specs.argv[0] == 'python':
-                    return {'name': name, 'language': language, 'display_name': kernel_specs.display_name}
+                if kernel_specs.language == 'python' and kernel_specs.argv[
+                        0] == 'python':
+                    return {
+                        'name': name,
+                        'language': language,
+                        'display_name': kernel_specs.display_name
+                    }
 
         for name in find_kernel_specs():
             kernel_specs = get_kernel_spec(name)
             if same_language(kernel_specs.language, language):
-                return {'name': name, 'language': language, 'display_name': kernel_specs.display_name}
+                return {
+                    'name': name,
+                    'language': language,
+                    'display_name': kernel_specs.display_name
+                }
     except (KeyError, ValueError):
         pass
     return None

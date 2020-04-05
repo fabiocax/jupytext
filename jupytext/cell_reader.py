@@ -28,9 +28,11 @@ def uncomment(lines, prefix='#'):
     prefix_and_space = prefix + ' '
     length_prefix = len(prefix)
     length_prefix_and_space = len(prefix_and_space)
-    return [line[length_prefix_and_space:] if line.startswith(prefix_and_space)
-            else (line[length_prefix:] if line.startswith(prefix) else line)
-            for line in lines]
+    return [
+        line[length_prefix_and_space:] if line.startswith(prefix_and_space)
+        else (line[length_prefix:] if line.startswith(prefix) else line)
+        for line in lines
+    ]
 
 
 def paragraph_is_fully_commented(lines, comment, main_language):
@@ -55,7 +57,8 @@ def next_code_is_indented(lines):
     return False
 
 
-def count_lines_to_next_cell(cell_end_marker, next_cell_start, total, explicit_eoc):
+def count_lines_to_next_cell(cell_end_marker, next_cell_start, total,
+                             explicit_eoc):
     """How many blank lines between end of cell marker and next cell?"""
     if cell_end_marker < total:
         lines_to_next_cell = next_cell_start - cell_end_marker
@@ -72,7 +75,8 @@ def last_two_lines_blank(source):
     """Are the two last lines blank, and not the third last one?"""
     if len(source) < 3:
         return False
-    return not _BLANK_LINE.match(source[-3]) and _BLANK_LINE.match(source[-2]) and _BLANK_LINE.match(source[-1])
+    return not _BLANK_LINE.match(source[-3]) and _BLANK_LINE.match(
+        source[-2]) and _BLANK_LINE.match(source[-1])
 
 
 class BaseCellReader(object):
@@ -95,8 +99,10 @@ class BaseCellReader(object):
         if not fmt:
             fmt = {}
         self.ext = fmt.get('extension')
-        self.default_language = default_language or _SCRIPT_EXTENSIONS.get(self.ext, {}).get('language', 'python')
-        self.comment_magics = fmt.get('comment_magics', self.default_comment_magics)
+        self.default_language = default_language or _SCRIPT_EXTENSIONS.get(
+            self.ext, {}).get('language', 'python')
+        self.comment_magics = fmt.get('comment_magics',
+                                      self.default_comment_magics)
         self.use_runtools = fmt.get('use_runtools', False)
         self.format_version = fmt.get('format_version')
         self.metadata = None
@@ -133,7 +139,8 @@ class BaseCellReader(object):
             self.metadata = {}
 
         if self.ext == '.py':
-            expected_blank_lines = pep8_lines_between_cells(self.org_content or [''], lines[pos_next_cell:], self.ext)
+            expected_blank_lines = pep8_lines_between_cells(
+                self.org_content or [''], lines[pos_next_cell:], self.ext)
         else:
             expected_blank_lines = 1
 
@@ -143,27 +150,32 @@ class BaseCellReader(object):
         if self.language:
             self.metadata['language'] = self.language
 
-        return new_cell(source='\n'.join(self.content), metadata=self.metadata), pos_next_cell
+        return new_cell(source='\n'.join(self.content),
+                        metadata=self.metadata), pos_next_cell
 
     def metadata_and_language_from_option_line(self, line):
         """Parse code options on the given line. When a start of a code cell
         is found, self.metadata is set to a dictionary."""
         if self.start_code_re.match(line):
-            self.language, self.metadata = self.options_to_metadata(self.start_code_re.findall(line)[0])
+            self.language, self.metadata = self.options_to_metadata(
+                self.start_code_re.findall(line)[0])
 
     def options_to_metadata(self, options):
         """Return language (str) and metadata (dict) from the option line"""
-        raise NotImplementedError("Option parsing must be implemented in a sub class")
+        raise NotImplementedError(
+            "Option parsing must be implemented in a sub class")
 
     def find_cell_end(self, lines):
         """Return position of end of cell marker, and position
         of first line after cell"""
-        raise NotImplementedError('This method must be implemented in a sub class')
+        raise NotImplementedError(
+            'This method must be implemented in a sub class')
 
     def find_cell_content(self, lines):
         """Parse cell till its end and set content, lines_to_next_cell.
         Return the position of next cell start"""
-        cell_end_marker, next_cell_start, self.explicit_eoc = self.find_cell_end(lines)
+        cell_end_marker, next_cell_start, self.explicit_eoc = self.find_cell_end(
+            lines)
 
         # Metadata to dict
         if self.metadata is None:
@@ -184,9 +196,12 @@ class BaseCellReader(object):
             else:
                 lines_to_end_of_cell_marker = 0
 
-            pep8_lines = pep8_lines_between_cells(source, lines[cell_end_marker:], self.ext)
+            pep8_lines = pep8_lines_between_cells(source,
+                                                  lines[cell_end_marker:],
+                                                  self.ext)
             if lines_to_end_of_cell_marker != (0 if pep8_lines == 1 else 2):
-                self.metadata['lines_to_end_of_cell_marker'] = lines_to_end_of_cell_marker
+                self.metadata[
+                    'lines_to_end_of_cell_marker'] = lines_to_end_of_cell_marker
 
         # Uncomment content
         self.explicit_soc = cell_start > 0
@@ -210,34 +225,34 @@ class BaseCellReader(object):
                     self.cell_type = 'raw'
 
         # Explicit end of cell marker?
-        if (next_cell_start + 1 < len(lines) and
-                _BLANK_LINE.match(lines[next_cell_start]) and
-                not _BLANK_LINE.match(lines[next_cell_start + 1])):
+        if (next_cell_start + 1 < len(lines)
+                and _BLANK_LINE.match(lines[next_cell_start])
+                and not _BLANK_LINE.match(lines[next_cell_start + 1])):
             next_cell_start += 1
-        elif (self.explicit_eoc and next_cell_start + 2 < len(lines) and
-              _BLANK_LINE.match(lines[next_cell_start]) and
-              _BLANK_LINE.match(lines[next_cell_start + 1]) and
-              not _BLANK_LINE.match(lines[next_cell_start + 2])):
+        elif (self.explicit_eoc and next_cell_start + 2 < len(lines)
+              and _BLANK_LINE.match(lines[next_cell_start])
+              and _BLANK_LINE.match(lines[next_cell_start + 1])
+              and not _BLANK_LINE.match(lines[next_cell_start + 2])):
             next_cell_start += 2
 
         self.lines_to_next_cell = count_lines_to_next_cell(
-            cell_end_marker,
-            next_cell_start,
-            len(lines),
-            self.explicit_eoc)
+            cell_end_marker, next_cell_start, len(lines), self.explicit_eoc)
 
         return next_cell_start
 
     def uncomment_code_and_magics(self, lines):
         """Uncomment code and possibly commented magic commands"""
-        raise NotImplementedError('This method must be implemented in a sub class')
+        raise NotImplementedError(
+            'This method must be implemented in a sub class')
 
     def extract_content(self, lines):
         # Code cells with just a multiline string become Markdown cells
-        if self.ext == '.py' and not is_active(self.ext, self.metadata, self.cell_type == 'code'):
+        if self.ext == '.py' and not is_active(self.ext, self.metadata,
+                                               self.cell_type == 'code'):
             content = '\n'.join(lines).strip()
             for triple_quote in ['"""', "'''"]:
-                if content.startswith(triple_quote) and content.endswith(triple_quote) and len(content) >= 6:
+                if content.startswith(triple_quote) and content.endswith(
+                        triple_quote) and len(content) >= 6:
                     left = right = triple_quote
                     content = content[3:-3]
                     # Trim first/last line return
@@ -255,7 +270,8 @@ class BaseCellReader(object):
 
         if not is_active(self.ext, self.metadata) or \
                 ('active' not in self.metadata and self.language and self.language != self.default_language):
-            return uncomment(lines, self.comment if self.ext not in ['.r', '.R'] else '#')
+            return uncomment(
+                lines, self.comment if self.ext not in ['.r', '.R'] else '#')
 
         return self.uncomment_code_and_magics(lines)
 
@@ -267,7 +283,8 @@ class MarkdownCellReader(BaseCellReader):
         '|'.join(_JUPYTER_LANGUAGES_LOWER_AND_UPPER).replace('+', '\\+')))
     non_jupyter_code_re = re.compile(r"^```")
     end_code_re = re.compile(r"^```\s*$")
-    start_region_re = re.compile(r"^<!--\s*#(region|markdown|md|raw)(.*)-->\s*$")
+    start_region_re = re.compile(
+        r"^<!--\s*#(region|markdown|md|raw)(.*)-->\s*$")
     end_region_re = None
     default_comment_magics = False
 
@@ -287,9 +304,12 @@ class MarkdownCellReader(BaseCellReader):
             self.in_region = True
             groups = match_region.groups()
             region_name = groups[0]
-            self.end_region_re = re.compile(r"^<!--\s*#end{}\s*-->\s*$".format(region_name))
-            self.cell_metadata_json = self.cell_metadata_json or is_json_metadata(groups[1])
-            title, self.metadata = text_to_metadata(groups[1], allow_title=True)
+            self.end_region_re = re.compile(
+                r"^<!--\s*#end{}\s*-->\s*$".format(region_name))
+            self.cell_metadata_json = self.cell_metadata_json or is_json_metadata(
+                groups[1])
+            title, self.metadata = text_to_metadata(groups[1],
+                                                    allow_title=True)
             if region_name == 'raw':
                 self.cell_type = 'raw'
             else:
@@ -299,7 +319,8 @@ class MarkdownCellReader(BaseCellReader):
             if region_name in ['markdown', 'md']:
                 self.metadata['region_name'] = region_name
         elif self.start_code_re.match(line):
-            self.language, self.metadata = self.options_to_metadata(self.start_code_re.findall(line)[0])
+            self.language, self.metadata = self.options_to_metadata(
+                self.start_code_re.findall(line)[0])
             # Cells with a .noeval attribute are markdown cells #347
             if self.metadata.get('.noeval', '') is None:
                 self.cell_type = 'markdown'
@@ -309,7 +330,8 @@ class MarkdownCellReader(BaseCellReader):
     def options_to_metadata(self, options):
         if isinstance(options, tuple):
             options = ' '.join(options)
-        self.cell_metadata_json = self.cell_metadata_json or is_json_metadata(options)
+        self.cell_metadata_json = self.cell_metadata_json or is_json_metadata(
+            options)
         return text_to_metadata(options)
 
     def find_cell_end(self, lines):
@@ -331,12 +353,14 @@ class MarkdownCellReader(BaseCellReader):
                     in_explicit_code_block = False
                     continue
 
-                if prev_blank and line.startswith('    ') and not _BLANK_LINE.match(line):
+                if prev_blank and line.startswith(
+                        '    ') and not _BLANK_LINE.match(line):
                     in_indented_code_block = True
                     prev_blank = 0
                     continue
 
-                if in_indented_code_block and not _BLANK_LINE.match(line) and not line.startswith('    '):
+                if in_indented_code_block and not _BLANK_LINE.match(
+                        line) and not line.startswith('    '):
                     in_indented_code_block = False
 
                 if in_indented_code_block or in_explicit_code_block:
@@ -349,7 +373,8 @@ class MarkdownCellReader(BaseCellReader):
 
                 if self.start_code_re.match(line):
                     # Cells with a .noeval attribute are markdown cells #347
-                    _, metadata = self.options_to_metadata(self.start_code_re.findall(line)[0])
+                    _, metadata = self.options_to_metadata(
+                        self.start_code_re.findall(line)[0])
                     if metadata.get('.noeval', '') is None:
                         in_explicit_code_block = True
                         prev_blank = 0
@@ -366,7 +391,8 @@ class MarkdownCellReader(BaseCellReader):
                     prev_blank = 0
                     continue
 
-                if self.split_at_heading and line.startswith('#') and prev_blank >= 1:
+                if self.split_at_heading and line.startswith(
+                        '#') and prev_blank >= 1:
                     return i - 1, i, False
 
                 if _BLANK_LINE.match(lines[i]):
@@ -412,7 +438,8 @@ class RMarkdownCellReader(MarkdownCellReader):
         return rmd_options_to_metadata(options, self.use_runtools)
 
     def uncomment_code_and_magics(self, lines):
-        if self.cell_type == 'code' and self.comment_magics and is_active(self.ext, self.metadata):
+        if self.cell_type == 'code' and self.comment_magics and is_active(
+                self.ext, self.metadata):
             uncomment_magic(lines, self.language or self.default_language)
 
         return lines
@@ -421,12 +448,13 @@ class RMarkdownCellReader(MarkdownCellReader):
 class ScriptCellReader(BaseCellReader):  # pylint: disable=W0223
     """Read notebook cells from scripts
     (common base for R and Python scripts)"""
-
     def uncomment_code_and_magics(self, lines):
         if self.cell_type == 'code' or self.comment != "#'":
             if self.comment_magics:
                 if is_active(self.ext, self.metadata):
-                    uncomment_magic(lines, self.language or self.default_language, explicitly_code=self.explicit_soc)
+                    uncomment_magic(lines,
+                                    self.language or self.default_language,
+                                    explicitly_code=self.explicit_soc)
                     if self.cell_type == 'code' and not self.explicit_soc and \
                             need_explicit_marker(lines, self.language or self.default_language):
                         self.metadata['comment_questions'] = False
@@ -434,7 +462,8 @@ class ScriptCellReader(BaseCellReader):  # pylint: disable=W0223
                     lines = uncomment(lines)
 
         if self.cell_type == 'code':
-            return unescape_code_start(lines, self.ext, self.language or self.default_language)
+            return unescape_code_start(lines, self.ext, self.language
+                                       or self.default_language)
 
         return uncomment(lines, self.markdown_prefix or self.comment)
 
@@ -482,7 +511,9 @@ class RScriptCellReader(ScriptCellReader):
 
             parser.read_line(line)
 
-            if self.start_code_re.match(line) or (self.markdown_prefix and line.startswith(self.markdown_prefix)):
+            if self.start_code_re.match(line) or (self.markdown_prefix
+                                                  and line.startswith(
+                                                      self.markdown_prefix)):
                 if i > 0 and _BLANK_LINE.match(lines[i - 1]):
                     if i > 1 and _BLANK_LINE.match(lines[i - 2]):
                         return i - 2, i, False
@@ -516,10 +547,16 @@ class LightScriptCellReader(ScriptCellReader):
         self.comment = script['comment']
         self.ignore_end_marker = True
         self.explicit_end_marker_required = False
-        if fmt and fmt.get('format_name', 'light') == 'light' and 'cell_markers' in fmt and fmt['cell_markers'] != '+,-':
-            self.cell_marker_start, self.cell_marker_end = fmt['cell_markers'].split(',', 1)
-            self.start_code_re = re.compile('^' + self.comment + r'\s*' + self.cell_marker_start + r'(.*)$')
-            self.end_code_re = re.compile('^' + self.comment + r'\s*' + self.cell_marker_end + r'\s*$')
+        if fmt and fmt.get(
+                'format_name',
+                'light') == 'light' and 'cell_markers' in fmt and fmt[
+                    'cell_markers'] != '+,-':
+            self.cell_marker_start, self.cell_marker_end = fmt[
+                'cell_markers'].split(',', 1)
+            self.start_code_re = re.compile('^' + self.comment + r'\s*' +
+                                            self.cell_marker_start + r'(.*)$')
+            self.end_code_re = re.compile('^' + self.comment + r'\s*' +
+                                          self.cell_marker_end + r'\s*$')
         else:
             self.start_code_re = re.compile('^' + self.comment + r'\s*\+(.*)$')
 
@@ -533,7 +570,8 @@ class LightScriptCellReader(ScriptCellReader):
             self.ignore_end_marker = False
             if self.cell_marker_start:
                 self.explicit_end_marker_required = True
-        elif self.simple_start_code_re and self.simple_start_code_re.match(line):
+        elif self.simple_start_code_re and self.simple_start_code_re.match(
+                line):
             self.metadata = {}
             self.ignore_end_marker = False
         elif self.cell_marker_end and self.end_code_re.match(line):
@@ -541,7 +579,8 @@ class LightScriptCellReader(ScriptCellReader):
             self.cell_type = 'code'
 
     def options_to_metadata(self, options):
-        self.cell_metadata_json = self.cell_metadata_json or is_json_metadata(options)
+        self.cell_metadata_json = self.cell_metadata_json or is_json_metadata(
+            options)
         title, metadata = text_to_metadata(options, allow_title=True)
 
         # Cell type
@@ -584,7 +623,8 @@ class LightScriptCellReader(ScriptCellReader):
             self.end_code_re = None
         elif not self.cell_marker_end:
             end_of_cell = self.metadata.get('endofcell', '-')
-            self.end_code_re = re.compile('^' + self.comment + ' ' + end_of_cell + r'\s*$')
+            self.end_code_re = re.compile('^' + self.comment + ' ' +
+                                          end_of_cell + r'\s*$')
 
         return self.find_region_end(lines)
 
@@ -609,8 +649,10 @@ class LightScriptCellReader(ScriptCellReader):
             # New code region
             # Simple code pattern in LightScripts must be preceded with a blank line
             if self.start_code_re.match(line) or (
-                    self.simple_start_code_re and self.simple_start_code_re.match(line) and
-                    (self.cell_marker_start or i == 0 or _BLANK_LINE.match(lines[i - 1]))):
+                    self.simple_start_code_re
+                    and self.simple_start_code_re.match(line) and
+                (self.cell_marker_start or i == 0
+                 or _BLANK_LINE.match(lines[i - 1]))):
 
                 if self.explicit_end_marker_required:
                     # Metadata here was conditioned on finding an explicit end marker
@@ -647,25 +689,30 @@ class DoublePercentScriptCellReader(LightScriptCellReader):
         script = _SCRIPT_EXTENSIONS[self.ext]
         self.default_language = default_language or script['language']
         self.comment = script['comment']
-        self.start_code_re = re.compile(r"^{}\s*%%(%*)\s(.*)$".format(self.comment))
-        self.alternative_start_code_re = re.compile(r"^{}\s*(%%|<codecell>|In\[[0-9 ]*\]:?)\s*$".format(self.comment))
+        self.start_code_re = re.compile(r"^{}\s*%%(%*)\s(.*)$".format(
+            self.comment))
+        self.alternative_start_code_re = re.compile(
+            r"^{}\s*(%%|<codecell>|In\[[0-9 ]*\]:?)\s*$".format(self.comment))
         self.explicit_soc = True
 
     def metadata_and_language_from_option_line(self, line):
         """Parse code options on the given line. When a start of a code cell
         is found, self.metadata is set to a dictionary."""
         if self.start_code_re.match(line):
-            self.language, self.metadata = self.options_to_metadata(line[line.find('%%') + 2:])
+            self.language, self.metadata = self.options_to_metadata(
+                line[line.find('%%') + 2:])
         else:
             self.metadata = {}
 
     def find_cell_content(self, lines):
         """Parse cell till its end and set content, lines_to_next_cell.
         Return the position of next cell start"""
-        cell_end_marker, next_cell_start, explicit_eoc = self.find_cell_end(lines)
+        cell_end_marker, next_cell_start, explicit_eoc = self.find_cell_end(
+            lines)
 
         # Metadata to dict
-        if self.start_code_re.match(lines[0]) or self.alternative_start_code_re.match(lines[0]):
+        if self.start_code_re.match(
+                lines[0]) or self.alternative_start_code_re.match(lines[0]):
             cell_start = 1
         else:
             cell_start = 0
@@ -676,10 +723,7 @@ class DoublePercentScriptCellReader(LightScriptCellReader):
         self.content = self.extract_content(source)
 
         self.lines_to_next_cell = count_lines_to_next_cell(
-            cell_end_marker,
-            next_cell_start,
-            len(lines),
-            explicit_eoc)
+            cell_end_marker, next_cell_start, len(lines), explicit_eoc)
 
         return next_cell_start
 
@@ -704,7 +748,8 @@ class DoublePercentScriptCellReader(LightScriptCellReader):
                 continue
 
             parser.read_line(line)
-            if i > 0 and (self.start_code_re.match(line) or self.alternative_start_code_re.match(line)):
+            if i > 0 and (self.start_code_re.match(line)
+                          or self.alternative_start_code_re.match(line)):
                 next_cell = i
                 break
 
@@ -731,7 +776,8 @@ class SphinxGalleryScriptCellReader(ScriptCellReader):  # pylint: disable=W0223
     markdown_marker = None
 
     def __init__(self, fmt=None, default_language='python'):
-        super(SphinxGalleryScriptCellReader, self).__init__(fmt, default_language)
+        super(SphinxGalleryScriptCellReader,
+              self).__init__(fmt, default_language)
         self.ext = '.py'
         self.rst2md = (fmt or {}).get('rst2md', False)
 
@@ -775,8 +821,10 @@ class SphinxGalleryScriptCellReader(ScriptCellReader):  # pylint: disable=W0223
             # Multi-line comment with triple quote
             if len(self.markdown_marker) == 3:
                 for i, line in enumerate(lines):
-                    if (i > 0 or line.strip() != self.markdown_marker) and line.rstrip().endswith(self.markdown_marker):
-                        explicit_end_of_cell_marker = line.strip() == self.markdown_marker
+                    if (i > 0 or line.strip() != self.markdown_marker
+                        ) and line.rstrip().endswith(self.markdown_marker):
+                        explicit_end_of_cell_marker = line.strip(
+                        ) == self.markdown_marker
                         if explicit_end_of_cell_marker:
                             end_of_cell = i
                         else:
@@ -811,7 +859,8 @@ class SphinxGalleryScriptCellReader(ScriptCellReader):  # pylint: disable=W0223
     def find_cell_content(self, lines):
         """Parse cell till its end and set content, lines_to_next_cell.
         Return the position of next cell start"""
-        cell_end_marker, next_cell_start, explicit_eoc = self.find_cell_end(lines)
+        cell_end_marker, next_cell_start, explicit_eoc = self.find_cell_end(
+            lines)
 
         # Metadata to dict
         cell_start = 0
@@ -824,7 +873,8 @@ class SphinxGalleryScriptCellReader(ScriptCellReader):  # pylint: disable=W0223
                     lines[0] = lines[0][3:]
                 if not explicit_eoc:
                     last = lines[cell_end_marker - 1]
-                    lines[cell_end_marker - 1] = last[:last.rfind(self.markdown_marker)]
+                    lines[cell_end_marker -
+                          1] = last[:last.rfind(self.markdown_marker)]
             if self.twenty_hash.match(self.markdown_marker):
                 cell_start = 1
         else:
@@ -844,14 +894,12 @@ class SphinxGalleryScriptCellReader(ScriptCellReader):  # pylint: disable=W0223
                 if rst2md:
                     source = rst2md('\n'.join(source)).splitlines()
                 else:
-                    raise ImportError('Could not import rst2md from sphinx_gallery.notebook')
+                    raise ImportError(
+                        'Could not import rst2md from sphinx_gallery.notebook')
 
         self.content = source
 
         self.lines_to_next_cell = count_lines_to_next_cell(
-            cell_end_marker,
-            next_cell_start,
-            len(lines),
-            explicit_eoc)
+            cell_end_marker, next_cell_start, len(lines), explicit_eoc)
 
         return next_cell_start

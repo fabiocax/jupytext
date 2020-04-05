@@ -21,14 +21,11 @@ def test_bad_notebook_metadata():
     """Test exception raised if notebook metadata cannot be parsed."""
     with pytest.raises(MystMetadataParsingError):
         myst_to_notebook(
-            dedent(
-                """\
+            dedent("""\
             ---
             {{a
             ---
-            """
-            )
-        )
+            """))
 
 
 @requires_myst
@@ -36,42 +33,31 @@ def test_bad_code_metadata():
     """Test exception raised if cell metadata cannot be parsed."""
     with pytest.raises(MystMetadataParsingError):
         myst_to_notebook(
-            dedent(
-                """\
+            dedent("""\
             ```{0}
             ---
             {{a
             ---
             ```
-            """
-            ).format(CODE_DIRECTIVE)
-        )
+            """).format(CODE_DIRECTIVE))
 
 
 @requires_myst
 def test_bad_markdown_metadata():
     """Test exception raised if markdown metadata cannot be parsed."""
     with pytest.raises(MystMetadataParsingError):
-        myst_to_notebook(
-            dedent(
-                """\
+        myst_to_notebook(dedent("""\
             +++ {{a
-            """
-            )
-        )
+            """))
 
 
 @requires_myst
 def test_bad_markdown_metadata2():
     """Test exception raised if markdown metadata is not a dict."""
     with pytest.raises(MystMetadataParsingError):
-        myst_to_notebook(
-            dedent(
-                """\
+        myst_to_notebook(dedent("""\
             +++ [1, 2]
-            """
-            )
-        )
+            """))
 
 
 @requires_myst
@@ -81,37 +67,31 @@ def test_matches_mystnb():
     assert matches_mystnb("---\njupytext: true\n---") is False
     for ext in myst_extensions(no_md=True):
         assert matches_mystnb("", ext=ext) is True
-    text = dedent(
-        """\
+    text = dedent("""\
         ---
         {{a
         ---
         ```{code-cell}
         :b: {{c
         ```
-        """
-    )
+        """)
     assert matches_mystnb(text) is True
-    text = dedent(
-        """\
+    text = dedent("""\
         ---
         jupytext:
             text_representation:
                 format_name: myst
                 extension: .md
         ---
-        """
-    )
+        """)
     assert matches_mystnb(text) is True
-    text = dedent(
-        """\
+    text = dedent("""\
         ---
         a: 1
         ---
         > ```{code-cell}
           ```
-        """
-    )
+        """)
     assert matches_mystnb(text) is True
 
 
@@ -124,8 +104,7 @@ def test_not_installed():
 @requires_myst
 def test_add_source_map():
     notebook = myst_to_notebook(
-        dedent(
-            """\
+        dedent("""\
             ---
             a: 1
             ---
@@ -139,8 +118,7 @@ def test_add_source_map():
             c = 3
             ```
             xyz
-            """
-        ).format(CODE_DIRECTIVE),
+            """).format(CODE_DIRECTIVE),
         add_source_map=True,
     )
     assert notebook.metadata.source_map == [3, 5, 7, 12]

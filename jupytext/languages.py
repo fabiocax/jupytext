@@ -1,50 +1,130 @@
 """Determine notebook or cell language"""
 
 # Jupyter magic commands that are also languages
-_JUPYTER_LANGUAGES = ['R', 'bash', 'sh', 'python', 'python2', 'python3', 'javascript', 'js', 'perl',
-                      'html', 'latex', 'markdown', 'pypy', 'ruby', 'script', 'svg',
-                      'matlab', 'octave', 'idl', 'robotframework', 'spark', 'sql']
+_JUPYTER_LANGUAGES = [
+    'R', 'bash', 'sh', 'python', 'python2', 'python3', 'javascript', 'js',
+    'perl', 'html', 'latex', 'markdown', 'pypy', 'ruby', 'script', 'svg',
+    'matlab', 'octave', 'idl', 'robotframework', 'spark', 'sql'
+]
 
 # Supported file extensions (and languages)
 # Please add more languages here (and add a few tests) - see CONTRIBUTING.md
-_SCRIPT_EXTENSIONS = {'.py': {'language': 'python', 'comment': '#'},
-                      '.R': {'language': 'R', 'comment': '#'},
-                      '.r': {'language': 'R', 'comment': '#'},
-                      '.jl': {'language': 'julia', 'comment': '#'},
-                      '.cpp': {'language': 'c++', 'comment': '//'},
-                      '.ss': {'language': 'scheme', 'comment': ';;'},
-                      '.clj': {'language': 'clojure', 'comment': ';;'},
-                      '.scm': {'language': 'scheme', 'comment': ';;'},
-                      '.sh': {'language': 'bash', 'comment': '#'},
-                      '.ps1': {'language': 'powershell', 'comment': '#'},
-                      '.q': {'language': 'q', 'comment': '/'},
-                      '.m': {'language': 'matlab', 'comment': '%'},
-                      '.pro': {'language': 'idl', 'comment': ';'},
-                      '.js': {'language': 'javascript', 'comment': '//'},
-                      '.ts': {'language': 'typescript', 'comment': '//'},
-                      '.scala': {'language': 'scala', 'comment': '//'},
-                      '.rs': {'language': 'rust', 'comment': '//'},
-                      '.robot': {'language': 'robotframework', 'comment': '#'},
-                      '.cs': {'language': 'csharp', 'comment': '//'},
-                      '.fsx': {'language': 'fsharp', 'comment': '//'},
-                      '.fs': {'language': 'fsharp', 'comment': '//'},
-                      '.sos': {'language': 'sos', 'comment': '#'},
-                      }
+_SCRIPT_EXTENSIONS = {
+    '.py': {
+        'language': 'python',
+        'comment': '#'
+    },
+    '.R': {
+        'language': 'R',
+        'comment': '#'
+    },
+    '.r': {
+        'language': 'R',
+        'comment': '#'
+    },
+    '.jl': {
+        'language': 'julia',
+        'comment': '#'
+    },
+    '.cpp': {
+        'language': 'c++',
+        'comment': '//'
+    },
+    '.ss': {
+        'language': 'scheme',
+        'comment': ';;'
+    },
+    '.clj': {
+        'language': 'clojure',
+        'comment': ';;'
+    },
+    '.scm': {
+        'language': 'scheme',
+        'comment': ';;'
+    },
+    '.sh': {
+        'language': 'bash',
+        'comment': '#'
+    },
+    '.ps1': {
+        'language': 'powershell',
+        'comment': '#'
+    },
+    '.q': {
+        'language': 'q',
+        'comment': '/'
+    },
+    '.m': {
+        'language': 'matlab',
+        'comment': '%'
+    },
+    '.pro': {
+        'language': 'idl',
+        'comment': ';'
+    },
+    '.js': {
+        'language': 'javascript',
+        'comment': '//'
+    },
+    '.ts': {
+        'language': 'typescript',
+        'comment': '//'
+    },
+    '.scala': {
+        'language': 'scala',
+        'comment': '//'
+    },
+    '.rs': {
+        'language': 'rust',
+        'comment': '//'
+    },
+    '.robot': {
+        'language': 'robotframework',
+        'comment': '#'
+    },
+    '.cs': {
+        'language': 'csharp',
+        'comment': '//'
+    },
+    '.fsx': {
+        'language': 'fsharp',
+        'comment': '//'
+    },
+    '.fs': {
+        'language': 'fsharp',
+        'comment': '//'
+    },
+    '.sos': {
+        'language': 'sos',
+        'comment': '#'
+    },
+}
 
-_COMMENT_CHARS = [_SCRIPT_EXTENSIONS[ext]['comment'] for ext in _SCRIPT_EXTENSIONS if
-                  _SCRIPT_EXTENSIONS[ext]['comment'] != '#']
+_COMMENT_CHARS = [
+    _SCRIPT_EXTENSIONS[ext]['comment'] for ext in _SCRIPT_EXTENSIONS
+    if _SCRIPT_EXTENSIONS[ext]['comment'] != '#'
+]
 
-_COMMENT = {_SCRIPT_EXTENSIONS[ext]['language']: _SCRIPT_EXTENSIONS[ext]['comment'] for ext in _SCRIPT_EXTENSIONS}
-_JUPYTER_LANGUAGES = set(_JUPYTER_LANGUAGES).union(_COMMENT.keys()).union(['c#', 'f#', 'cs', 'fs'])
-_JUPYTER_LANGUAGES_LOWER_AND_UPPER = _JUPYTER_LANGUAGES.union({str.upper(lang) for lang in _JUPYTER_LANGUAGES})
+_COMMENT = {
+    _SCRIPT_EXTENSIONS[ext]['language']: _SCRIPT_EXTENSIONS[ext]['comment']
+    for ext in _SCRIPT_EXTENSIONS
+}
+_JUPYTER_LANGUAGES = set(_JUPYTER_LANGUAGES).union(_COMMENT.keys()).union(
+    ['c#', 'f#', 'cs', 'fs'])
+_JUPYTER_LANGUAGES_LOWER_AND_UPPER = _JUPYTER_LANGUAGES.union(
+    {str.upper(lang)
+     for lang in _JUPYTER_LANGUAGES})
 
 
-def default_language_from_metadata_and_ext(metadata, ext, pop_main_language=False):
+def default_language_from_metadata_and_ext(metadata,
+                                           ext,
+                                           pop_main_language=False):
     """Return the default language given the notebook metadata, and a file extension"""
     default_from_ext = _SCRIPT_EXTENSIONS.get(ext, {}).get('language')
 
     main_language = metadata.get('jupytext', {}).get('main_language')
-    default_language = metadata.get('kernelspec', {}).get('language') or default_from_ext
+    default_language = metadata.get('kernelspec',
+                                    {}).get('language') or default_from_ext
     language = main_language or default_language
 
     if main_language is not None and main_language == default_language and pop_main_language:
@@ -77,7 +157,8 @@ def usual_language_name(language):
 
 def same_language(kernel_language, language):
     """Are those the same language?"""
-    return usual_language_name(kernel_language) == usual_language_name(language)
+    return usual_language_name(kernel_language) == usual_language_name(
+        language)
 
 
 def set_main_and_cell_language(metadata, cells, ext):
@@ -114,9 +195,11 @@ def set_main_and_cell_language(metadata, cells, ext):
                 magic = '%%' if main_language != 'csharp' else '#!'
                 if 'magic_args' in cell['metadata']:
                     magic_args = cell['metadata'].pop('magic_args')
-                    cell['source'] = u'{}{} {}\n'.format(magic, language, magic_args) + cell['source']
+                    cell['source'] = u'{}{} {}\n'.format(
+                        magic, language, magic_args) + cell['source']
                 else:
-                    cell['source'] = u'{}{}\n'.format(magic, language) + cell['source']
+                    cell['source'] = u'{}{}\n'.format(
+                        magic, language) + cell['source']
 
 
 def cell_language(source, default_language):

@@ -38,7 +38,8 @@ class BaseCellExporter(object):
                                         self.fmt.get('cell_metadata_filter'),
                                         _IGNORE_CELL_METADATA)
         if self.parse_cell_language:
-            self.language, magic_args = cell_language(self.source, default_language)
+            self.language, magic_args = cell_language(self.source,
+                                                      default_language)
 
             if magic_args:
                 self.metadata['magic_args'] = magic_args
@@ -48,19 +49,23 @@ class BaseCellExporter(object):
         if self.language and not self.ext.endswith('.Rmd'):
             self.metadata['language'] = self.language
 
-        self.language = self.language or cell.metadata.get('language', default_language)
+        self.language = self.language or cell.metadata.get(
+            'language', default_language)
         self.default_language = default_language
         self.comment = _SCRIPT_EXTENSIONS.get(self.ext, {}).get('comment', '#')
-        self.comment_magics = self.fmt.get('comment_magics', self.default_comment_magics)
+        self.comment_magics = self.fmt.get('comment_magics',
+                                           self.default_comment_magics)
         self.cell_metadata_json = self.fmt.get('cell_metadata_json', False)
         self.use_runtools = self.fmt.get('use_runtools', False)
 
         # how many blank lines before next cell
         self.lines_to_next_cell = cell.metadata.get('lines_to_next_cell')
-        self.lines_to_end_of_cell_marker = cell.metadata.get('lines_to_end_of_cell_marker')
+        self.lines_to_end_of_cell_marker = cell.metadata.get(
+            'lines_to_end_of_cell_marker')
 
         if cell.cell_type == 'raw' and 'active' not in self.metadata and not any(
-                tag.startswith('active-') for tag in self.metadata.get('tags', [])):
+                tag.startswith('active-')
+                for tag in self.metadata.get('tags', [])):
             self.metadata['active'] = ''
 
     def is_code(self):
@@ -68,7 +73,8 @@ class BaseCellExporter(object):
         if self.cell_type == 'code':
             return True
         if self.cell_type == 'raw' and 'active' in self.metadata or any(
-                tag.startswith('active-') for tag in self.metadata.get('tags', [])):
+                tag.startswith('active-')
+                for tag in self.metadata.get('tags', [])):
             return True
         return False
 
@@ -87,7 +93,8 @@ class BaseCellExporter(object):
     def cell_to_text(self):
         """Return the text representation for the cell"""
         # Trigger cell marker in case we are using multiline quotes
-        if self.cell_type != 'code' and not self.metadata and self.use_triple_quotes():
+        if self.cell_type != 'code' and not self.metadata and self.use_triple_quotes(
+        ):
             self.metadata['cell_type'] = self.cell_type
 
         if self.is_code():
@@ -100,7 +107,8 @@ class BaseCellExporter(object):
 
     def markdown_to_text(self, source):
         """Escape the given source, for a markdown cell"""
-        cell_markers = self.unfiltered_metadata.get('cell_marker', self.fmt.get('cell_markers'))
+        cell_markers = self.unfiltered_metadata.get(
+            'cell_marker', self.fmt.get('cell_markers'))
         if cell_markers:
             if ',' in cell_markers:
                 left, right = cell_markers.split(',', 1)
@@ -116,13 +124,17 @@ class BaseCellExporter(object):
         if self.comment and self.comment != "#'" and is_active(self.ext, self.metadata) and \
                 self.fmt.get('format_name') not in ['percent', 'hydrogen']:
             source = copy(source)
-            comment_magic(source, self.language, self.comment_magics, explicitly_code=self.cell_type == 'code')
+            comment_magic(source,
+                          self.language,
+                          self.comment_magics,
+                          explicitly_code=self.cell_type == 'code')
 
         return comment_lines(source, self.comment)
 
     def code_to_text(self):
         """Return the text representation of this cell as a code cell"""
-        raise NotImplementedError('This method must be implemented in a sub-class')
+        raise NotImplementedError(
+            'This method must be implemented in a sub-class')
 
     def remove_eoc_marker(self, text, next_text):
         """Remove end-of-cell marker when possible"""
@@ -142,7 +154,11 @@ class MarkdownCellExporter(BaseCellExporter):
     def html_comment(self, metadata, code='region'):
         """Protect a Markdown or Raw cell with HTML comments"""
         if metadata:
-            region_start = ['<!-- #' + code, metadata_to_text(metadata, plain_json=self.cell_metadata_json), '-->']
+            region_start = [
+                '<!-- #' + code,
+                metadata_to_text(metadata, plain_json=self.cell_metadata_json),
+                '-->'
+            ]
             region_start = ' '.join(region_start)
         else:
             region_start = '<!-- #{} -->'.format(code)
@@ -158,9 +174,11 @@ class MarkdownCellExporter(BaseCellExporter):
             else:
                 # Would the text be parsed to a shorter cell/a cell with a different type?
                 cell, pos = self.cell_reader(self.fmt).read(self.source)
-                protect = pos < len(self.source) or cell.cell_type != self.cell_type
+                protect = pos < len(
+                    self.source) or cell.cell_type != self.cell_type
             if protect:
-                return self.html_comment(self.metadata, self.metadata.pop('region_name', 'region'))
+                return self.html_comment(
+                    self.metadata, self.metadata.pop('region_name', 'region'))
             return self.source
 
         return self.code_to_text()
@@ -174,7 +192,8 @@ class MarkdownCellExporter(BaseCellExporter):
             self.metadata.pop('active')
 
         self.language = self.metadata.pop('language', self.language)
-        if self.cell_type == 'raw' and not is_active(self.ext, self.metadata, False):
+        if self.cell_type == 'raw' and not is_active(self.ext, self.metadata,
+                                                     False):
             return self.html_comment(self.metadata, 'raw')
 
         options = metadata_to_text(self.language, self.metadata)
@@ -202,7 +221,8 @@ class RMarkdownCellExporter(MarkdownCellExporter):
         lines = []
         if not is_active(self.ext, self.metadata):
             self.metadata['eval'] = False
-        options = metadata_to_rmd_options(self.language, self.metadata, self.use_runtools)
+        options = metadata_to_rmd_options(self.language, self.metadata,
+                                          self.use_runtools)
         lines.append('```{{{}}}'.format(options))
         lines.extend(source)
         lines.append('```')
@@ -214,7 +234,8 @@ def endofcell_marker(source, comment):
     we add an end-of-cell marker"""
     endofcell = '-'
     while True:
-        endofcell_re = re.compile(r'^{}( )'.format(comment) + endofcell + r'\s*$')
+        endofcell_re = re.compile(r'^{}( )'.format(comment) + endofcell +
+                                  r'\s*$')
         if list(filter(endofcell_re.match, source)):
             endofcell = endofcell + '-'
         else:
@@ -232,17 +253,20 @@ class LightScriptCellExporter(BaseCellExporter):
         BaseCellExporter.__init__(self, *args, **kwargs)
         if 'cell_markers' in self.fmt:
             if ',' not in self.fmt['cell_markers']:
-                warnings.warn("Ignored cell markers '{}' as it does not match the expected 'start,end' pattern"
-                              .format(self.fmt.pop('cell_markers')))
+                warnings.warn(
+                    "Ignored cell markers '{}' as it does not match the expected 'start,end' pattern"
+                    .format(self.fmt.pop('cell_markers')))
             elif self.fmt['cell_markers'] != '+,-':
-                self.cell_marker_start, self.cell_marker_end = self.fmt['cell_markers'].split(',', 1)
+                self.cell_marker_start, self.cell_marker_end = self.fmt[
+                    'cell_markers'].split(',', 1)
         for key in ['endofcell']:
             if key in self.unfiltered_metadata:
                 self.metadata[key] = self.unfiltered_metadata[key]
 
     def is_code(self):
         # Treat markdown cells with metadata as code cells (#66)
-        if (self.cell_type == 'markdown' and self.metadata) or self.use_triple_quotes():
+        if (self.cell_type == 'markdown'
+                and self.metadata) or self.use_triple_quotes():
             if is_active(self.ext, self.metadata):
                 self.metadata['cell_type'] = self.cell_type
                 self.source = self.markdown_to_text(self.source)
@@ -254,19 +278,23 @@ class LightScriptCellExporter(BaseCellExporter):
 
     def code_to_text(self):
         """Return the text representation of a code cell"""
-        active = is_active(self.ext, self.metadata, same_language(self.language, self.default_language))
+        active = is_active(self.ext, self.metadata,
+                           same_language(self.language, self.default_language))
         source = copy(self.source)
         escape_code_start(source, self.ext, self.language)
         comment_questions = self.metadata.pop('comment_questions', True)
 
         if active:
-            comment_magic(source, self.language, self.comment_magics, comment_questions)
+            comment_magic(source, self.language, self.comment_magics,
+                          comment_questions)
         else:
             source = self.markdown_to_text(source)
 
         if (active and comment_questions and need_explicit_marker(self.source, self.language, self.comment_magics)) \
                 or self.explicit_start_marker(source):
-            self.metadata['endofcell'] = self.cell_marker_end or endofcell_marker(source, self.comment)
+            self.metadata[
+                'endofcell'] = self.cell_marker_end or endofcell_marker(
+                    source, self.comment)
 
         if not self.metadata or not self.use_cell_markers:
             return source
@@ -277,7 +305,8 @@ class LightScriptCellExporter(BaseCellExporter):
             del self.metadata['endofcell']
 
         cell_start = [self.comment, self.cell_marker_start or '+']
-        options = metadata_to_double_percent_options(self.metadata, self.cell_metadata_json)
+        options = metadata_to_double_percent_options(self.metadata,
+                                                     self.cell_metadata_json)
         if options:
             cell_start.append(options)
         lines.append(' '.join(cell_start))
@@ -293,8 +322,10 @@ class LightScriptCellExporter(BaseCellExporter):
         if self.metadata:
             return True
         if self.cell_marker_start:
-            start_code_re = re.compile('^' + self.comment + r'\s*' + self.cell_marker_start + r'\s*(.*)$')
-            end_code_re = re.compile('^' + self.comment + r'\s*' + self.cell_marker_end + r'\s*$')
+            start_code_re = re.compile('^' + self.comment + r'\s*' +
+                                       self.cell_marker_start + r'\s*(.*)$')
+            end_code_re = re.compile('^' + self.comment + r'\s*' +
+                                     self.cell_marker_end + r'\s*$')
             if start_code_re.match(source[0]) or end_code_re.match(source[0]):
                 return False
 
@@ -316,15 +347,18 @@ class LightScriptCellExporter(BaseCellExporter):
                 text = text[:-1]
                 # When we do not need the end of cell marker, number of blank lines is the max
                 # between that required at the end of the cell, and that required before the next cell.
-                if self.lines_to_end_of_cell_marker and (self.lines_to_next_cell is None or
-                                                         self.lines_to_end_of_cell_marker > self.lines_to_next_cell):
+                if self.lines_to_end_of_cell_marker and (
+                        self.lines_to_next_cell is None
+                        or self.lines_to_end_of_cell_marker >
+                        self.lines_to_next_cell):
                     self.lines_to_next_cell = self.lines_to_end_of_cell_marker
             else:
                 # Insert blank lines at the end of the cell
                 blank_lines = self.lines_to_end_of_cell_marker
                 if blank_lines is None:
                     # two blank lines when required by pep8
-                    blank_lines = pep8_lines_between_cells(text[:-1], next_text, self.ext)
+                    blank_lines = pep8_lines_between_cells(
+                        text[:-1], next_text, self.ext)
                     blank_lines = 0 if blank_lines < 2 else 2
                 text = text[:-1] + [''] * blank_lines + text[-1:]
 
@@ -359,7 +393,8 @@ class RScriptCellExporter(BaseCellExporter):
         lines = []
         if not is_active(self.ext, self.metadata):
             self.metadata['eval'] = False
-        options = metadata_to_rmd_options(None, self.metadata, self.use_runtools)
+        options = metadata_to_rmd_options(None, self.metadata,
+                                          self.use_runtools)
         if options:
             lines.append('#+ {}'.format(options))
         lines.extend(source)
@@ -377,14 +412,17 @@ class DoublePercentCellExporter(BaseCellExporter):  # pylint: disable=W0223
 
     def cell_to_text(self):
         """Return the text representation for the cell"""
-        active = is_active(self.ext, self.metadata, same_language(self.language, self.default_language))
-        if self.cell_type == 'raw' and 'active' in self.metadata and self.metadata['active'] == '':
+        active = is_active(self.ext, self.metadata,
+                           same_language(self.language, self.default_language))
+        if self.cell_type == 'raw' and 'active' in self.metadata and self.metadata[
+                'active'] == '':
             del self.metadata['active']
 
         if not self.is_code():
             self.metadata['cell_type'] = self.cell_type
 
-        options = metadata_to_double_percent_options(self.metadata, self.cell_metadata_json)
+        options = metadata_to_double_percent_options(self.metadata,
+                                                     self.cell_metadata_json)
         if options.startswith('%') or not options:
             lines = [self.comment + ' %%' + options]
         else:
@@ -422,8 +460,10 @@ class SphinxGalleryCellExporter(BaseCellExporter):  # pylint: disable=W0223
                 self.metadata[key] = self.unfiltered_metadata[key]
 
         if self.fmt.get('rst2md'):
-            raise ValueError("The 'rst2md' option is a read only option. The reverse conversion is not "
-                             "implemented. Please either deactivate the option, or save to another format.")
+            raise ValueError(
+                "The 'rst2md' option is a read only option. The reverse conversion is not "
+                "implemented. Please either deactivate the option, or save to another format."
+            )
 
     def cell_to_text(self):
         """Return the text representation for the cell"""
@@ -442,5 +482,7 @@ class SphinxGalleryCellExporter(BaseCellExporter):  # pylint: disable=W0223
         if cell_marker in ['"""', "'''"]:
             return [cell_marker] + self.source + [cell_marker]
 
-        return [cell_marker if cell_marker.startswith('#' * 20)
-                else self.default_cell_marker] + comment_lines(self.source, self.comment)
+        return [
+            cell_marker
+            if cell_marker.startswith('#' * 20) else self.default_cell_marker
+        ] + comment_lines(self.source, self.comment)

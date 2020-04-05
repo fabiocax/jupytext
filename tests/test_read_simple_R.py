@@ -6,7 +6,8 @@ import jupytext
 
 
 @pytest.mark.parametrize('ext', ['.r', '.R'])
-def test_read_simple_file(ext, rnb="""#' ---
+def test_read_simple_file(ext,
+                          rnb="""#' ---
 #' title: Simple file
 #' ---
 
@@ -41,7 +42,8 @@ h <- function(y)
 
 
 @pytest.mark.parametrize('ext', ['.r', '.R'])
-def test_read_less_simple_file(ext, rnb="""#' ---
+def test_read_less_simple_file(ext,
+                               rnb="""#' ---
 #' title: Less simple file
 #' ---
 
@@ -68,14 +70,13 @@ h <- function(y) {
     assert nb.cells[1].source == 'Here we have some text\n' \
                                  'And below we have some R code'
     assert nb.cells[2].cell_type == 'code'
-    compare(nb.cells[2].source,
-            """# This is a comment about function f
+    compare(
+        nb.cells[2].source, """# This is a comment about function f
 f <- function(x) {
 
     return(x+1)}""")
     assert nb.cells[3].cell_type == 'code'
-    compare(nb.cells[3].source,
-            '''# And a comment on h
+    compare(nb.cells[3].source, '''# And a comment on h
 h <- function(y) {
     return(y-1)
 }''')
@@ -85,7 +86,8 @@ h <- function(y) {
 
 
 @pytest.mark.parametrize('ext', ['.r', '.R'])
-def test_no_space_after_code(ext, rnb=u"""# -*- coding: utf-8 -*-
+def test_no_space_after_code(ext,
+                             rnb=u"""# -*- coding: utf-8 -*-
 #' Markdown cell
 
 f <- function(x)
@@ -113,7 +115,8 @@ f <- function(x)
 
 
 @pytest.mark.parametrize('ext', ['.r', '.R'])
-def test_read_write_script(ext, rnb="""#!/usr/bin/env Rscript
+def test_read_write_script(ext,
+                           rnb="""#!/usr/bin/env Rscript
 # coding=utf-8
 print('Hello world')
 """):
@@ -123,7 +126,8 @@ print('Hello world')
 
 
 @pytest.mark.parametrize('ext', ['.r', '.R'])
-def test_escape_start_pattern(ext, rnb="""#' The code start pattern '#+' can
+def test_escape_start_pattern(ext,
+                              rnb="""#' The code start pattern '#+' can
 #' appear in code and markdown cells.
 
 #' In markdown cells it is escaped like here:
@@ -149,7 +153,8 @@ def test_escape_start_pattern(ext, rnb="""#' The code start pattern '#+' can
 
 
 @pytest.mark.parametrize('ext', ['.r', '.R'])
-def test_read_simple_r(ext, text="""# This is a very simple R file
+def test_read_simple_r(ext,
+                       text="""# This is a very simple R file
 # I expect to get three cells here.
 #
 # The first one is markdown. The two others

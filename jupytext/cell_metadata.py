@@ -31,23 +31,29 @@ _RMARKDOWN_TO_RUNTOOLS_OPTION_MAP = [
     (('results', '"hide"'), [('hide_output', True)])
 ]
 # Alternatively, Jupytext can also map the Jupyter Book options to R Markdown
-_RMARKDOWN_TO_JUPYTER_BOOK_MAP = [
-    (('include', 'FALSE'), 'remove_cell'),
-    (('echo', 'FALSE'), 'remove_input'),
-    (('results', "'hide'"), 'remove_output'),
-    (('results', '"hide"'), 'remove_output')
-]
+_RMARKDOWN_TO_JUPYTER_BOOK_MAP = [(('include', 'FALSE'), 'remove_cell'),
+                                  (('echo', 'FALSE'), 'remove_input'),
+                                  (('results', "'hide'"), 'remove_output'),
+                                  (('results', '"hide"'), 'remove_output')]
 
 _JUPYTEXT_CELL_METADATA = [
     # Pre-jupytext metadata
-    'skipline', 'noskipline',
+    'skipline',
+    'noskipline',
     # Jupytext metadata
-    'cell_marker', 'lines_to_next_cell', 'lines_to_end_of_cell_marker']
+    'cell_marker',
+    'lines_to_next_cell',
+    'lines_to_end_of_cell_marker'
+]
 _IGNORE_CELL_METADATA = ','.join('-{}'.format(name) for name in [
     # Frequent cell metadata that should not enter the text representation
     # (these metadata are preserved in the paired Jupyter notebook).
-    'autoscroll', 'collapsed', 'scrolled', 'trusted', 'ExecuteTime'] +
-                                 _JUPYTEXT_CELL_METADATA)
+    'autoscroll',
+    'collapsed',
+    'scrolled',
+    'trusted',
+    'ExecuteTime'
+] + _JUPYTEXT_CELL_METADATA)
 
 _IDENTIFIER_RE = re.compile(r'^[a-zA-Z_\.]+[a-zA-Z0-9_\.]*$')
 
@@ -80,14 +86,21 @@ def metadata_to_rmd_options(language, metadata, use_runtools=False):
         del metadata['name']
     if use_runtools:
         for rmd_option, jupyter_options in _RMARKDOWN_TO_RUNTOOLS_OPTION_MAP:
-            if all([metadata.get(opt_name) == opt_value for opt_name, opt_value in jupyter_options]):
-                options += ' {}={},'.format(rmd_option[0], 'FALSE' if rmd_option[1] is False else rmd_option[1])
+            if all([
+                    metadata.get(opt_name) == opt_value
+                    for opt_name, opt_value in jupyter_options
+            ]):
+                options += ' {}={},'.format(
+                    rmd_option[0],
+                    'FALSE' if rmd_option[1] is False else rmd_option[1])
                 for opt_name, _ in jupyter_options:
                     metadata.pop(opt_name)
     else:
         for rmd_option, tag in _RMARKDOWN_TO_JUPYTER_BOOK_MAP:
             if tag in metadata.get('tags', []):
-                options += ' {}={},'.format(rmd_option[0], 'FALSE' if rmd_option[1] is False else rmd_option[1])
+                options += ' {}={},'.format(
+                    rmd_option[0],
+                    'FALSE' if rmd_option[1] is False else rmd_option[1])
                 metadata['tags'] = [i for i in metadata['tags'] if i != tag]
                 if not metadata['tags']:
                     metadata.pop('tags')
@@ -97,12 +110,12 @@ def metadata_to_rmd_options(language, metadata, use_runtools=False):
         if opt_name == 'active':
             options += ' {}="{}",'.format(opt_name, str(opt_value))
         elif isinstance(opt_value, bool):
-            options += ' {}={},'.format(
-                opt_name, 'TRUE' if opt_value else 'FALSE')
+            options += ' {}={},'.format(opt_name,
+                                        'TRUE' if opt_value else 'FALSE')
         elif isinstance(opt_value, list):
             options += ' {}={},'.format(
-                opt_name, 'c({})'.format(
-                    ', '.join(['"{}"'.format(str(v)) for v in opt_value])))
+                opt_name, 'c({})'.format(', '.join(
+                    ['"{}"'.format(str(v)) for v in opt_value])))
         elif isinstance(opt_value, (str, unicode)):
             if opt_value.startswith('#R_CODE#'):
                 options += ' {}={},'.format(opt_name, opt_value[8:])
@@ -117,7 +130,10 @@ def metadata_to_rmd_options(language, metadata, use_runtools=False):
     return options.strip(',').strip()
 
 
-def update_metadata_from_rmd_options(name, value, metadata, use_runtools=False):
+def update_metadata_from_rmd_options(name,
+                                     value,
+                                     metadata,
+                                     use_runtools=False):
     """Map the R Markdown cell visibility options to the Jupyter ones"""
     if use_runtools:
         for rmd_option, jupyter_options in _RMARKDOWN_TO_RUNTOOLS_OPTION_MAP:
@@ -149,8 +165,8 @@ class ParsingContext:
     def in_global_expression(self):
         """Currently inside an expression"""
         return (self.parenthesis_count == 0 and self.curly_bracket_count == 0
-                and self.square_bracket_count == 0
-                and not self.in_single_quote and not self.in_double_quote)
+                and self.square_bracket_count == 0 and not self.in_single_quote
+                and not self.in_double_quote)
 
     def count_special_chars(self, char, prev_char):
         """Update parenthesis counters"""
@@ -249,7 +265,10 @@ def rmd_options_to_metadata(options, use_runtools=False):
         if i == 0 and name == '':
             metadata['name'] = value
             continue
-        if update_metadata_from_rmd_options(name, value, metadata, use_runtools=use_runtools):
+        if update_metadata_from_rmd_options(name,
+                                            value,
+                                            metadata,
+                                            use_runtools=use_runtools):
             continue
         try:
             metadata[name] = _py_logical_values(value)
@@ -271,7 +290,9 @@ def try_eval_metadata(metadata, name):
     value = metadata[name]
     if not isinstance(value, (str, unicode)):
         return
-    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+    if (value.startswith('"')
+            and value.endswith('"')) or (value.startswith("'")
+                                         and value.endswith("'")):
         metadata[name] = value[1:-1]
         return
     if value.startswith('c(') and value.endswith(')'):
@@ -306,7 +327,8 @@ def metadata_to_double_percent_options(metadata, plain_json):
     if 'cell_depth' in metadata:
         text.insert(0, '%' * metadata.pop('cell_depth'))
     if 'cell_type' in metadata:
-        text.append('[{}]'.format(metadata.pop('region_name', metadata.pop('cell_type'))))
+        text.append('[{}]'.format(
+            metadata.pop('region_name', metadata.pop('cell_type'))))
     return metadata_to_text(' '.join(text), metadata, plain_json=plain_json)
 
 
@@ -366,7 +388,8 @@ def parse_key_equal_value(text):
             continue
 
         # Combine with remaining metadata
-        metadata = parse_key_equal_value(text[:prev_whitespace]) if prev_whitespace > 0 else {}
+        metadata = parse_key_equal_value(
+            text[:prev_whitespace]) if prev_whitespace > 0 else {}
 
         # Append our value
         metadata[key] = value
@@ -414,7 +437,8 @@ def text_to_metadata(text, allow_title=False):
     first_curly_bracket = text.find('{')
     first_equal_sign = text.find('=')
 
-    if first_curly_bracket < 0 or (0 <= first_equal_sign < first_curly_bracket):
+    if first_curly_bracket < 0 or (0 <= first_equal_sign <
+                                   first_curly_bracket):
         # this is a key=value metadata line
         # case one = the options may be preceeded with a language
         if not allow_title:
@@ -447,7 +471,8 @@ def text_to_metadata(text, allow_title=False):
         return title, parse_key_equal_value(text[len(title):])
 
     # json metadata line
-    return text[:first_curly_bracket].strip(), relax_json_loads(text[first_curly_bracket:], catch=True)
+    return text[:first_curly_bracket].strip(), relax_json_loads(
+        text[first_curly_bracket:], catch=True)
 
 
 def metadata_to_text(language_or_title, metadata=None, plain_json=False):
@@ -456,10 +481,14 @@ def metadata_to_text(language_or_title, metadata=None, plain_json=False):
     if metadata is None:
         metadata, language_or_title = language_or_title, metadata
 
-    metadata = {key: metadata[key] for key in metadata if key not in _JUPYTEXT_CELL_METADATA}
+    metadata = {
+        key: metadata[key]
+        for key in metadata if key not in _JUPYTEXT_CELL_METADATA
+    }
     text = [language_or_title] if language_or_title else []
     if language_or_title is None:
-        if 'title' in metadata and '{' not in metadata['title'] and '=' not in metadata['title']:
+        if 'title' in metadata and '{' not in metadata[
+                'title'] and '=' not in metadata['title']:
             text.append(metadata.pop('title'))
 
     if plain_json:

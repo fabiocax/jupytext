@@ -26,8 +26,10 @@ def test_rmd_notebooks_are_trusted(nb_file):
         assert cell.metadata.get('trusted', True)
 
 
-@pytest.mark.parametrize('nb_file', list_notebooks('ipynb_py', skip='hash sign'))
-def test_ipynb_notebooks_can_be_trusted(nb_file, tmpdir, no_jupytext_version_number):
+@pytest.mark.parametrize('nb_file', list_notebooks('ipynb_py',
+                                                   skip='hash sign'))
+def test_ipynb_notebooks_can_be_trusted(nb_file, tmpdir,
+                                        no_jupytext_version_number):
     cm = TextFileContentsManager()
     root, file = os.path.split(nb_file)
     tmp_ipynb = str(tmpdir.join(file))
@@ -50,7 +52,8 @@ def test_ipynb_notebooks_can_be_trusted(nb_file, tmpdir, no_jupytext_version_num
 
     model = cm.get(file)
     for cell in model['content'].cells:
-        assert 'trusted' not in cell.metadata or not cell.metadata['trusted'] or not cell.outputs
+        assert 'trusted' not in cell.metadata or not cell.metadata[
+            'trusted'] or not cell.outputs
 
     # Trust and reload
     cm.trust_notebook(py_file)
@@ -71,9 +74,10 @@ def test_ipynb_notebooks_can_be_trusted(nb_file, tmpdir, no_jupytext_version_num
     cm.trust_notebook(file)
 
 
-@pytest.mark.parametrize('nb_file', list_notebooks('ipynb_py', skip='hash sign'))
-def test_ipynb_notebooks_can_be_trusted_even_with_metadata_filter(nb_file, tmpdir,
-                                                                  no_jupytext_version_number):
+@pytest.mark.parametrize('nb_file', list_notebooks('ipynb_py',
+                                                   skip='hash sign'))
+def test_ipynb_notebooks_can_be_trusted_even_with_metadata_filter(
+    nb_file, tmpdir, no_jupytext_version_number):
     cm = TextFileContentsManager()
     root, file = os.path.split(nb_file)
     tmp_ipynb = str(tmpdir.join(file))

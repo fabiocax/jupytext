@@ -7,9 +7,11 @@ from jupytext.formats import long_form_one_format
 from .utils import list_notebooks
 
 
-@pytest.mark.parametrize('nb_file,fmt',
-                         product(list_notebooks('ipynb_py') + list_notebooks('ipynb_R'),
-                                 ['auto:light', 'auto:percent', 'md', '.Rmd', '.ipynb']))
+@pytest.mark.parametrize(
+    'nb_file,fmt',
+    product(
+        list_notebooks('ipynb_py') + list_notebooks('ipynb_R'),
+        ['auto:light', 'auto:percent', 'md', '.Rmd', '.ipynb']))
 def test_write_notebook_does_not_change_it(nb_file, fmt, tmpdir):
     nb_org = read(nb_file)
     nb_org_copied = deepcopy(nb_org)

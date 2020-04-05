@@ -24,11 +24,11 @@ from .myst import myst_extensions, myst_to_notebook, notebook_to_myst, MYST_FORM
 
 class TextNotebookConverter(NotebookReader, NotebookWriter):
     """A class that can read or write a Jupyter notebook as text"""
-
     def __init__(self, fmt):
         self.fmt = copy(long_form_one_format(fmt))
         self.ext = self.fmt['extension']
-        self.implementation = get_format_implementation(self.ext, self.fmt.get('format_name'))
+        self.implementation = get_format_implementation(
+            self.ext, self.fmt.get('format_name'))
 
     def update_fmt_with_notebook_options(self, metadata):
         """Update format options with the values in the notebook metadata, and record those
@@ -38,7 +38,8 @@ class TextNotebookConverter(NotebookReader, NotebookWriter):
             if opt in metadata.get('jupytext', {}):
                 self.fmt.setdefault(opt, metadata['jupytext'][opt])
             if opt in self.fmt:
-                metadata.setdefault('jupytext', {}).setdefault(opt, self.fmt[opt])
+                metadata.setdefault('jupytext',
+                                    {}).setdefault(opt, self.fmt[opt])
 
         # Is this format the same as that documented in the YAML header? If so, we want to know the format version
         file_fmt = metadata.get('jupytext', {}).get('text_representation', {})
@@ -61,10 +62,11 @@ class TextNotebookConverter(NotebookReader, NotebookWriter):
         lines = s.splitlines()
 
         cells = []
-        metadata, jupyter_md, header_cell, pos = header_to_metadata_and_cell(lines,
-                                                                             self.implementation.header_prefix,
-                                                                             self.implementation.extension)
-        default_language = default_language_from_metadata_and_ext(metadata, self.implementation.extension)
+        metadata, jupyter_md, header_cell, pos = header_to_metadata_and_cell(
+            lines, self.implementation.header_prefix,
+            self.implementation.extension)
+        default_language = default_language_from_metadata_and_ext(
+            metadata, self.implementation.extension)
         self.update_fmt_with_notebook_options(metadata)
 
         if header_cell:
@@ -72,30 +74,36 @@ class TextNotebookConverter(NotebookReader, NotebookWriter):
 
         lines = lines[pos:]
 
-        if self.implementation.format_name and self.implementation.format_name.startswith('sphinx'):
+        if self.implementation.format_name and self.implementation.format_name.startswith(
+                'sphinx'):
             cells.append(new_code_cell(source='%matplotlib inline'))
 
         cell_metadata_json = False
 
         while lines:
-            reader = self.implementation.cell_reader_class(self.fmt, default_language)
+            reader = self.implementation.cell_reader_class(
+                self.fmt, default_language)
             cell, pos = reader.read(lines)
             cells.append(cell)
             cell_metadata_json = cell_metadata_json or reader.cell_metadata_json
             if pos <= 0:
-                raise Exception('Blocked at lines ' + '\n'.join(lines[:6]))  # pragma: no cover
+                raise Exception('Blocked at lines ' +
+                                '\n'.join(lines[:6]))  # pragma: no cover
             lines = lines[pos:]
 
-        set_main_and_cell_language(metadata, cells, self.implementation.extension)
+        set_main_and_cell_language(metadata, cells,
+                                   self.implementation.extension)
         cell_metadata = set()
         for cell in cells:
             cell_metadata.update(cell.metadata.keys())
         update_metadata_filters(metadata, jupyter_md, cell_metadata)
 
         if cell_metadata_json:
-            metadata.setdefault('jupytext', {}).setdefault('cell_metadata_json', True)
+            metadata.setdefault('jupytext',
+                                {}).setdefault('cell_metadata_json', True)
 
-        if self.implementation.format_name and self.implementation.format_name.startswith('sphinx'):
+        if self.implementation.format_name and self.implementation.format_name.startswith(
+                'sphinx'):
             filtered_cells = []
             for i, cell in enumerate(cells):
                 if cell.source == '' and i > 0 and i + 1 < len(cells) \
@@ -109,71 +117,85 @@ class TextNotebookConverter(NotebookReader, NotebookWriter):
     def writes(self, nb, metadata=None, **kwargs):
         """Return the text representation of the notebook"""
         if self.fmt.get('format_name') == 'pandoc':
-            metadata = insert_jupytext_info_and_filter_metadata(metadata, self.ext, self.implementation)
+            metadata = insert_jupytext_info_and_filter_metadata(
+                metadata, self.ext, self.implementation)
 
             cells = []
             for cell in nb.cells:
-                cell_metadata = filter_metadata(cell.metadata,
-                                                self.fmt.get('cell_metadata_filter'),
-                                                _IGNORE_CELL_METADATA)
+                cell_metadata = filter_metadata(
+                    cell.metadata, self.fmt.get('cell_metadata_filter'),
+                    _IGNORE_CELL_METADATA)
                 if cell.cell_type == 'code':
-                    cells.append(new_code_cell(source=cell.source, metadata=cell_metadata))
+                    cells.append(
+                        new_code_cell(source=cell.source,
+                                      metadata=cell_metadata))
                 else:
-                    cells.append(NotebookNode(source=cell.source, metadata=cell_metadata, cell_type=cell.cell_type))
+                    cells.append(
+                        NotebookNode(source=cell.source,
+                                     metadata=cell_metadata,
+                                     cell_type=cell.cell_type))
 
-            return notebook_to_md(NotebookNode(
+            return notebook_to_md(
+                NotebookNode(nbformat=nb.nbformat,
+                             nbformat_minor=nb.nbformat_minor,
+                             metadata=metadata,
+                             cells=cells))
+
+        if self.fmt.get('format_name'
+                        ) == MYST_FORMAT_NAME or self.ext in myst_extensions(
+                            no_md=True):
+            pygments_lexer = metadata.get("language_info",
+                                          {}).get("pygments_lexer", None)
+            metadata = insert_jupytext_info_and_filter_metadata(
+                metadata, self.ext, self.implementation)
+
+            cells = []
+            for cell in nb.cells:
+                cell_metadata = filter_metadata(
+                    cell.metadata, self.fmt.get('cell_metadata_filter'),
+                    _IGNORE_CELL_METADATA)
+                if cell.cell_type == 'code':
+                    cells.append(
+                        new_code_cell(source=cell.source,
+                                      metadata=cell_metadata))
+                else:
+                    cells.append(
+                        NotebookNode(source=cell.source,
+                                     metadata=cell_metadata,
+                                     cell_type=cell.cell_type))
+            return notebook_to_myst(NotebookNode(
                 nbformat=nb.nbformat,
                 nbformat_minor=nb.nbformat_minor,
                 metadata=metadata,
-                cells=cells))
-
-        if self.fmt.get('format_name') == MYST_FORMAT_NAME or self.ext in myst_extensions(no_md=True):
-            pygments_lexer = metadata.get("language_info", {}).get("pygments_lexer", None)
-            metadata = insert_jupytext_info_and_filter_metadata(metadata, self.ext, self.implementation)
-
-            cells = []
-            for cell in nb.cells:
-                cell_metadata = filter_metadata(cell.metadata,
-                                                self.fmt.get('cell_metadata_filter'),
-                                                _IGNORE_CELL_METADATA)
-                if cell.cell_type == 'code':
-                    cells.append(new_code_cell(source=cell.source, metadata=cell_metadata))
-                else:
-                    cells.append(NotebookNode(source=cell.source, metadata=cell_metadata, cell_type=cell.cell_type))
-            return notebook_to_myst(
-                NotebookNode(
-                    nbformat=nb.nbformat,
-                    nbformat_minor=nb.nbformat_minor,
-                    metadata=metadata,
-                    cells=cells),
-                default_lexer=pygments_lexer)
+                cells=cells),
+                                    default_lexer=pygments_lexer)
 
         # Copy the notebook, in order to be sure we do not modify the original notebook
-        nb = NotebookNode(
-            nbformat=nb.nbformat,
-            nbformat_minor=nb.nbformat_minor,
-            metadata=deepcopy(metadata or nb.metadata),
-            cells=nb.cells)
+        nb = NotebookNode(nbformat=nb.nbformat,
+                          nbformat_minor=nb.nbformat_minor,
+                          metadata=deepcopy(metadata or nb.metadata),
+                          cells=nb.cells)
 
         metadata = nb.metadata
-        default_language = default_language_from_metadata_and_ext(metadata,
-                                                                  self.implementation.extension,
-                                                                  True) or 'python'
+        default_language = default_language_from_metadata_and_ext(
+            metadata, self.implementation.extension, True) or 'python'
         self.update_fmt_with_notebook_options(nb.metadata)
         if 'use_runtools' not in self.fmt:
             for cell in nb.cells:
-                if cell.metadata.get('hide_input', False) or cell.metadata.get('hide_output', False):
+                if cell.metadata.get('hide_input', False) or cell.metadata.get(
+                        'hide_output', False):
                     self.fmt['use_runtools'] = True
                     break
 
         header = encoding_and_executable(nb, metadata, self.ext)
-        header_content, header_lines_to_next_cell = metadata_and_cell_to_header(nb, metadata,
-                                                                                self.implementation, self.ext)
+        header_content, header_lines_to_next_cell = metadata_and_cell_to_header(
+            nb, metadata, self.implementation, self.ext)
         header.extend(header_content)
 
         cell_exporters = []
-        looking_for_first_markdown_cell = (self.implementation.format_name and
-                                           self.implementation.format_name.startswith('sphinx'))
+        looking_for_first_markdown_cell = (
+            self.implementation.format_name
+            and self.implementation.format_name.startswith('sphinx'))
         split_at_heading = self.fmt.get('split_at_heading', False)
 
         for cell in nb.cells:
@@ -181,7 +203,9 @@ class TextNotebookConverter(NotebookReader, NotebookWriter):
                 cell.metadata.setdefault('cell_marker', '"""')
                 looking_for_first_markdown_cell = False
 
-            cell_exporters.append(self.implementation.cell_exporter_class(cell, default_language, self.fmt))
+            cell_exporters.append(
+                self.implementation.cell_exporter_class(
+                    cell, default_language, self.fmt))
 
         texts = [cell.cell_to_text() for cell in cell_exporters]
         lines = []
@@ -197,27 +221,33 @@ class TextNotebookConverter(NotebookReader, NotebookWriter):
 
             lines_to_next_cell = cell.lines_to_next_cell
             if lines_to_next_cell is None:
-                lines_to_next_cell = pep8_lines_between_cells(text, lines, self.implementation.extension)
+                lines_to_next_cell = pep8_lines_between_cells(
+                    text, lines, self.implementation.extension)
 
             text.extend([''] * lines_to_next_cell)
 
             # two blank lines between markdown cells in Rmd when those do not have explicit region markers
             if self.ext in ['.md', '.markdown', '.Rmd'] and not cell.is_code():
-                if (i + 1 < len(cell_exporters) and not cell_exporters[i + 1].is_code() and
-                        not texts[i][0].startswith('<!-- #') and
-                        not texts[i + 1][0].startswith('<!-- #') and
-                        (not split_at_heading or not (texts[i + 1] and texts[i + 1][0].startswith('#')))):
+                if (i + 1 < len(cell_exporters)
+                        and not cell_exporters[i + 1].is_code()
+                        and not texts[i][0].startswith('<!-- #')
+                        and not texts[i + 1][0].startswith('<!-- #') and
+                    (not split_at_heading or
+                     not (texts[i + 1] and texts[i + 1][0].startswith('#')))):
                     text.append('')
 
             # "" between two consecutive code cells in sphinx
-            if self.implementation.format_name.startswith('sphinx') and cell.is_code():
-                if i + 1 < len(cell_exporters) and cell_exporters[i + 1].is_code():
+            if self.implementation.format_name.startswith(
+                    'sphinx') and cell.is_code():
+                if i + 1 < len(cell_exporters) and cell_exporters[i +
+                                                                  1].is_code():
                     text.append('""')
 
             lines = text + lines
 
         if header_lines_to_next_cell is None:
-            header_lines_to_next_cell = pep8_lines_between_cells(header_content, lines, self.implementation.extension)
+            header_lines_to_next_cell = pep8_lines_between_cells(
+                header_content, lines, self.implementation.extension)
 
         header.extend([''] * header_lines_to_next_cell)
 
@@ -241,7 +271,8 @@ def reads(text, fmt, as_version=nbformat.NO_CONVERT, **kwargs):
     if ext == '.ipynb':
         return nbformat.reads(text, as_version, **kwargs)
 
-    format_name = read_format_from_metadata(text, ext) or fmt.get('format_name')
+    format_name = read_format_from_metadata(text,
+                                            ext) or fmt.get('format_name')
 
     if format_name:
         format_options = {}
@@ -257,8 +288,14 @@ def reads(text, fmt, as_version=nbformat.NO_CONVERT, **kwargs):
     rearrange_jupytext_metadata(notebook.metadata)
 
     if format_name and insert_or_test_version_number():
-        notebook.metadata.setdefault('jupytext', {}).setdefault('text_representation', {}).update(
-            {'extension': ext, 'format_name': format_name})
+        notebook.metadata.setdefault('jupytext',
+                                     {}).setdefault('text_representation',
+                                                    {}).update({
+                                                        'extension':
+                                                        ext,
+                                                        'format_name':
+                                                        format_name
+                                                    })
 
     return notebook
 
@@ -274,7 +311,9 @@ def read(fp, as_version=nbformat.NO_CONVERT, fmt=None, **kwargs):
     :return: the notebook
     """
     if as_version != nbformat.NO_CONVERT and not isinstance(as_version, int):
-        raise TypeError("Second argument 'as_version' should be either nbformat.NO_CONVERT, or an integer.")
+        raise TypeError(
+            "Second argument 'as_version' should be either nbformat.NO_CONVERT, or an integer."
+        )
 
     if fp == '-':
         text = sys.stdin.read()
@@ -326,14 +365,15 @@ def writes(notebook, fmt, version=nbformat.NO_CONVERT, **kwargs):
         if not jupytext_metadata:
             metadata.pop('jupytext', {})
         return nbformat.writes(
-            NotebookNode(
-                nbformat=notebook.nbformat,
-                nbformat_minor=notebook.nbformat_minor,
-                metadata=metadata,
-                cells=notebook.cells), version, **kwargs)
+            NotebookNode(nbformat=notebook.nbformat,
+                         nbformat_minor=notebook.nbformat_minor,
+                         metadata=metadata,
+                         cells=notebook.cells), version, **kwargs)
 
     if not format_name:
-        format_name = format_name_for_ext(metadata, ext, explicit_default=False)
+        format_name = format_name_for_ext(metadata,
+                                          ext,
+                                          explicit_default=False)
 
     if format_name:
         fmt['format_name'] = format_name
@@ -390,7 +430,8 @@ def create_prefix_dir(nb_file, fmt):
     if 'prefix' in fmt:
         nb_dir = os.path.dirname(nb_file) + os.path.sep
         if not os.path.isdir(nb_dir):
-            logging.log(logging.WARNING, "[jupytext] creating missing directory %s", nb_dir)
+            logging.log(logging.WARNING,
+                        "[jupytext] creating missing directory %s", nb_dir)
             os.makedirs(nb_dir)
 
 

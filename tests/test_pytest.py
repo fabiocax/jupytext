@@ -3,8 +3,8 @@ from jupytext.cli import jupytext
 
 
 def test_run_pytest_ok(
-        tmpdir,
-        text="""This is a notebook with a test that is supposed to pass
+    tmpdir,
+    text="""This is a notebook with a test that is supposed to pass
 ```python
 def test_ok():
     assert True
@@ -17,9 +17,9 @@ def test_ok():
 
 
 def test_run_pytest_fail(
-        tmpdir,
-        capsys,
-        text="""This is a notebook with a test that should not pass
+    tmpdir,
+    capsys,
+    text="""This is a notebook with a test that should not pass
 ```python
 def test_fail():
     assert False

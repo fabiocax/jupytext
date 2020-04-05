@@ -8,8 +8,10 @@ from jupytext.formats import long_form_one_format, long_form_multiple_formats, s
 def test_simple_pair():
     formats = long_form_multiple_formats('ipynb,py')
     expected_paths = ['notebook.ipynb', 'notebook.py']
-    compare(paired_paths('notebook.ipynb', 'ipynb', formats), list(zip(expected_paths, formats)))
-    compare(paired_paths('notebook.py', 'py', formats), list(zip(expected_paths, formats)))
+    compare(paired_paths('notebook.ipynb', 'ipynb', formats),
+            list(zip(expected_paths, formats)))
+    compare(paired_paths('notebook.py', 'py', formats),
+            list(zip(expected_paths, formats)))
 
 
 def test_base_path():
@@ -23,7 +25,8 @@ def test_many_and_suffix():
     formats = long_form_multiple_formats('ipynb,.pct.py,_lgt.py')
     expected_paths = ['notebook.ipynb', 'notebook.pct.py', 'notebook_lgt.py']
     for fmt, path in zip(formats, expected_paths):
-        compare(paired_paths(path, fmt, formats), list(zip(expected_paths, formats)))
+        compare(paired_paths(path, fmt, formats),
+                list(zip(expected_paths, formats)))
 
     with pytest.raises(InconsistentPath):
         paired_paths('wrong_suffix.py', 'py', formats)
@@ -37,28 +40,37 @@ def test_prefix_and_suffix():
     formats = long_form_multiple_formats(short_formats)
     assert short_form_multiple_formats(formats) == short_formats
 
-    expected_paths = ['parent/notebook_folder/notebook_prefix_NOTEBOOK_NAME_notebook_suffix.ipynb',
-                      'parent/script_folder/NOTEBOOK_NAME_in_percent_format.py',
-                      'parent/script_folder/NOTEBOOK_NAME_in_light_format.py']
+    expected_paths = [
+        'parent/notebook_folder/notebook_prefix_NOTEBOOK_NAME_notebook_suffix.ipynb',
+        'parent/script_folder/NOTEBOOK_NAME_in_percent_format.py',
+        'parent/script_folder/NOTEBOOK_NAME_in_light_format.py'
+    ]
     for fmt, path in zip(formats, expected_paths):
-        compare(paired_paths(path, fmt, formats), list(zip(expected_paths, formats)))
+        compare(paired_paths(path, fmt, formats),
+                list(zip(expected_paths, formats)))
 
     # without the parent folder
     expected_paths = [path[7:] for path in expected_paths]
     for fmt, path in zip(formats, expected_paths):
-        compare(paired_paths(path, fmt, formats), list(zip(expected_paths, formats)))
+        compare(paired_paths(path, fmt, formats),
+                list(zip(expected_paths, formats)))
 
     # Not the expected parent folder
     with pytest.raises(InconsistentPath):
-        paired_paths('script_folder_incorrect/NOTEBOOK_NAME_in_percent_format.py', formats[1], formats)
+        paired_paths(
+            'script_folder_incorrect/NOTEBOOK_NAME_in_percent_format.py',
+            formats[1], formats)
 
     # Not the expected suffix
     with pytest.raises(InconsistentPath):
-        paired_paths('parent/script_folder/NOTEBOOK_NAME_in_LIGHT_format.py', formats[2], formats)
+        paired_paths('parent/script_folder/NOTEBOOK_NAME_in_LIGHT_format.py',
+                     formats[2], formats)
 
     # Not the expected extension
     with pytest.raises(InconsistentPath):
-        paired_paths('notebook_folder/notebook_prefix_NOTEBOOK_NAME_notebook_suffix.py', formats[0], formats)
+        paired_paths(
+            'notebook_folder/notebook_prefix_NOTEBOOK_NAME_notebook_suffix.py',
+            formats[0], formats)
 
 
 def test_prefix_on_root_174():
@@ -69,7 +81,8 @@ def test_prefix_on_root_174():
 
     expected_paths = ['Untitled.ipynb', 'python/Untitled.py']
     for fmt, path in zip(formats, expected_paths):
-        compare(paired_paths(path, fmt, formats), list(zip(expected_paths, formats)))
+        compare(paired_paths(path, fmt, formats),
+                list(zip(expected_paths, formats)))
 
 
 def test_duplicated_paths():
@@ -84,11 +97,17 @@ def test_cm_paired_paths():
 
     three = 'ipynb,py,md'
     cm.update_paired_notebooks('nb.ipynb', 'ipynb', three)
-    assert cm.paired_notebooks == {'nb.' + fmt: (fmt, three) for fmt in three.split(',')}
+    assert cm.paired_notebooks == {
+        'nb.' + fmt: (fmt, three)
+        for fmt in three.split(',')
+    }
 
     two = 'ipynb,Rmd'
     cm.update_paired_notebooks('nb.ipynb', 'ipynb', two)
-    assert cm.paired_notebooks == {'nb.' + fmt: (fmt, two) for fmt in two.split(',')}
+    assert cm.paired_notebooks == {
+        'nb.' + fmt: (fmt, two)
+        for fmt in two.split(',')
+    }
 
     one = 'ipynb'
     cm.update_paired_notebooks('nb.ipynb', 'ipynb', one)

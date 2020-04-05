@@ -56,7 +56,7 @@ def test_read_simple_file(script="""# ---
 
 
 def test_read_cell_with_metadata(
-        script="""# %% a code cell with parameters {"tags": ["parameters"]}
+    script="""# %% a code cell with parameters {"tags": ["parameters"]}
 a = 3
 """):
     nb = jupytext.reads(script, 'py:hydrogen')
@@ -65,7 +65,8 @@ a = 3
     assert nb.cells[0].source == 'a = 3'
     assert nb.cells[0].metadata == {
         'title': 'a code cell with parameters',
-        'tags': ['parameters']}
+        'tags': ['parameters']
+    }
 
     script2 = jupytext.writes(nb, 'py:hydrogen')
     compare(script2, script)

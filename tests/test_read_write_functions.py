@@ -9,7 +9,8 @@ from jupytext.compare import compare
 def test_simple_hook(tmpdir):
     nb_file = str(tmpdir.join('notebook.ipynb'))
     md_file = str(tmpdir.join('notebook.md'))
-    nbformat.write(new_notebook(cells=[new_markdown_cell('Some text')]), nb_file)
+    nbformat.write(new_notebook(cells=[new_markdown_cell('Some text')]),
+                   nb_file)
 
     nb = jupytext.read(nb_file)
     jupytext.write(nb, md_file)
@@ -23,7 +24,8 @@ def test_simple_hook(tmpdir):
 def test_simple_hook_with_explicit_format(tmpdir):
     nb_file = str(tmpdir.join('notebook.ipynb'))
     py_file = str(tmpdir.join('notebook.py'))
-    nbformat.write(new_notebook(cells=[new_markdown_cell('Some text')]), nb_file)
+    nbformat.write(new_notebook(cells=[new_markdown_cell('Some text')]),
+                   nb_file)
 
     nb = jupytext.read(nb_file)
     jupytext.write(nb, py_file, fmt='py:percent')
@@ -38,7 +40,8 @@ def test_simple_hook_with_explicit_format(tmpdir):
 def test_no_error_on_path_object(tmpdir):
     nb_file = Path(str(tmpdir.join('notebook.ipynb')))
     md_file = nb_file.with_suffix('.md')
-    nbformat.write(new_notebook(cells=[new_markdown_cell('Some text')]), str(nb_file))
+    nbformat.write(new_notebook(cells=[new_markdown_cell('Some text')]),
+                   str(nb_file))
 
     nb = jupytext.read(nb_file)
     jupytext.write(nb, md_file)

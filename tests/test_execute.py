@@ -13,8 +13,10 @@ def test_pipe_nbconvert_execute(tmpdir):
         fp.write("""1 + 2
 """)
 
-    jupytext(args=[tmp_py, '--to', 'ipynb', '--pipe-fmt', 'ipynb',
-                   '--pipe', 'jupyter nbconvert --stdin --stdout --to notebook --execute'])
+    jupytext(args=[
+        tmp_py, '--to', 'ipynb', '--pipe-fmt', 'ipynb', '--pipe',
+        'jupyter nbconvert --stdin --stdout --to notebook --execute'
+    ])
 
     nb = read(tmp_ipynb)
     assert len(nb.cells) == 1
@@ -30,8 +32,10 @@ def test_pipe_nbconvert_execute_sync(tmpdir):
         fp.write("""1 + 2
 """)
 
-    jupytext(args=[tmp_py, '--set-formats', 'py,ipynb', '--sync', '--pipe-fmt', 'ipynb',
-                   '--pipe', 'jupyter nbconvert --stdin --stdout --to notebook --execute'])
+    jupytext(args=[
+        tmp_py, '--set-formats', 'py,ipynb', '--sync', '--pipe-fmt', 'ipynb',
+        '--pipe', 'jupyter nbconvert --stdin --stdout --to notebook --execute'
+    ])
 
     nb = read(tmp_ipynb)
     assert len(nb.cells) == 1
@@ -84,7 +88,8 @@ a + 1
 """)
 
     import nbconvert
-    with pytest.raises(nbconvert.preprocessors.execute.CellExecutionError, match="is not defined"):
+    with pytest.raises(nbconvert.preprocessors.execute.CellExecutionError,
+                       match="is not defined"):
         jupytext(args=[tmp_md, '--execute'])
 
 

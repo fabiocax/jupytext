@@ -38,18 +38,22 @@ def combine_inputs_with_outputs(nb_source, nb_outputs, fmt=None):
     nb_source.nbformat_minor = nb_outputs.nbformat_minor
 
     fmt = long_form_one_format(fmt)
-    text_repr = nb_source.metadata.get('jupytext', {}).get('text_representation', {})
+    text_repr = nb_source.metadata.get('jupytext',
+                                       {}).get('text_representation', {})
     ext = fmt.get('extension') or text_repr.get('extension')
     format_name = fmt.get('format_name') or text_repr.get('format_name')
 
     nb_source.metadata = restore_filtered_metadata(
-        nb_source.metadata,
-        nb_outputs.metadata,
+        nb_source.metadata, nb_outputs.metadata,
         nb_source.metadata.get('jupytext', {}).get('notebook_metadata_filter'),
         _DEFAULT_NOTEBOOK_METADATA)
 
-    source_is_md_version_one = ext in ['.md', '.markdown', '.Rmd'] and text_repr.get('format_version') == '1.0'
-    if nb_source.metadata.get('jupytext', {}).get('formats') or ext in ['.md', '.markdown', '.Rmd']:
+    source_is_md_version_one = ext in [
+        '.md', '.markdown', '.Rmd'
+    ] and text_repr.get('format_version') == '1.0'
+    if nb_source.metadata.get('jupytext', {}).get('formats') or ext in [
+            '.md', '.markdown', '.Rmd'
+    ]:
         nb_source.metadata.get('jupytext', {}).pop('text_representation', None)
 
     if not nb_source.metadata.get('jupytext', {}):
@@ -58,7 +62,8 @@ def combine_inputs_with_outputs(nb_source, nb_outputs, fmt=None):
     if format_name in ['nomarker', 'sphinx'] or source_is_md_version_one:
         cell_metadata_filter = '-all'
     else:
-        cell_metadata_filter = nb_source.metadata.get('jupytext', {}).get('cell_metadata_filter')
+        cell_metadata_filter = nb_source.metadata.get(
+            'jupytext', {}).get('cell_metadata_filter')
 
     outputs_map = map_outputs_to_inputs(nb_source.cells, nb_outputs.cells)
 
@@ -74,16 +79,18 @@ def combine_inputs_with_outputs(nb_source, nb_outputs, fmt=None):
                 cell.outputs = ocell.outputs
 
                 # Restore the filtered output cell metadata
-                cell.metadata = restore_filtered_metadata(cell.metadata, ocell.metadata,
-                                                          cell_metadata_filter, _IGNORE_CELL_METADATA)
+                cell.metadata = restore_filtered_metadata(
+                    cell.metadata, ocell.metadata, cell_metadata_filter,
+                    _IGNORE_CELL_METADATA)
         else:
             if j is not None:
                 ocell = nb_outputs.cells[j]
 
                 # The 'spin' format does not allow metadata on non-code cells
-                cell.metadata = restore_filtered_metadata(cell.metadata, ocell.metadata,
-                                                          '-all' if format_name == 'spin' else cell_metadata_filter,
-                                                          _IGNORE_CELL_METADATA)
+                cell.metadata = restore_filtered_metadata(
+                    cell.metadata, ocell.metadata,
+                    '-all' if format_name == 'spin' else cell_metadata_filter,
+                    _IGNORE_CELL_METADATA)
 
     return nb_source
 
@@ -98,11 +105,15 @@ def map_outputs_to_inputs(cells_inputs, cells_outputs):
     first_unmatched_output_per_cell_type = {}
     for i in range(n_in):
         cell_input = cells_inputs[i]
-        for j in range(first_unmatched_output_per_cell_type.get(cell_input.cell_type, 0), n_out):
+        for j in range(
+                first_unmatched_output_per_cell_type.get(
+                    cell_input.cell_type, 0), n_out):
             cell_output = cells_outputs[j]
-            if cell_input.cell_type == cell_output.cell_type and same_content(cell_input.source, cell_output.source):
+            if cell_input.cell_type == cell_output.cell_type and same_content(
+                    cell_input.source, cell_output.source):
                 outputs_map[i] = j
-                first_unmatched_output_per_cell_type[cell_input.cell_type] = j + 1
+                first_unmatched_output_per_cell_type[
+                    cell_input.cell_type] = j + 1
                 break
 
     # Second rule: match unused outputs based on cell type and content
@@ -140,7 +151,8 @@ def map_outputs_to_inputs(cells_inputs, cells_outputs):
 
         cell_input = cells_inputs[i]
         cell_output = cells_outputs[j]
-        if cell_input.cell_type == cell_output.cell_type and cell_input.source.strip() != '':
+        if cell_input.cell_type == cell_output.cell_type and cell_input.source.strip(
+        ) != '':
             outputs_map[i] = j
             unused_ouputs.remove(j)
             prev_j = j

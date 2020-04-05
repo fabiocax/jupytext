@@ -29,7 +29,8 @@ def is_myst_available():
         return False
     major, minor = myst_parser.__version__.split(".")[:2]
     if int(major) < 1 and int(minor) < 8:
-        warnings.warn("The installed myst-parser version is less than the required 0.8")
+        warnings.warn(
+            "The installed myst-parser version is less than the required 0.8")
         return False
     return True
 
@@ -47,11 +48,11 @@ def myst_extensions(no_md=False):
 
 
 def matches_mystnb(
-        text,
-        ext=None,
-        requires_meta=True,
-        code_directive=CODE_DIRECTIVE,
-        raw_directive=RAW_DIRECTIVE,
+    text,
+    ext=None,
+    requires_meta=True,
+    code_directive=CODE_DIRECTIVE,
+    raw_directive=RAW_DIRECTIVE,
 ):
     """Attempt to distinguish a file as myst, only given its extension and content.
 
@@ -61,7 +62,8 @@ def matches_mystnb(
     :param raw_directive: the name of the directive to search for containing raw cells
     """
     # is the extension uniquely associated with myst (i.e. not just .md)
-    if ext and "." + ("." + ext).rsplit(".", 1)[1] in myst_extensions(no_md=True):
+    if ext and "." + ("." + ext).rsplit(".", 1)[1] in myst_extensions(
+            no_md=True):
         return True
 
     # might the text contain metadata front matter
@@ -84,19 +86,18 @@ def matches_mystnb(
             pass
         else:
             try:
-                if (metadata.get('jupytext', {})
-                        .get('text_representation', {})
-                        .get('format_name', '') == MYST_FORMAT_NAME):
+                if (metadata.get('jupytext',
+                                 {}).get('text_representation',
+                                         {}).get('format_name',
+                                                 '') == MYST_FORMAT_NAME):
                     return True
             except AttributeError:
                 pass
 
     # is there at least on fenced code block with a code/raw directive language
     for token in tokens:
-        if token.type == "fence" and (
-                token.info.startswith(code_directive)
-                or token.info.startswith(raw_directive)
-        ):
+        if token.type == "fence" and (token.info.startswith(code_directive)
+                                      or token.info.startswith(raw_directive)):
             return True
 
     return False
@@ -109,12 +110,16 @@ class CompactDumper(yaml.SafeDumper):
 def represent_list(self, data):
     """Compact lists"""
     flow_style = not any(isinstance(i, dict) for i in data)
-    return self.represent_sequence("tag:yaml.org,2002:seq", data, flow_style=flow_style)
+    return self.represent_sequence("tag:yaml.org,2002:seq",
+                                   data,
+                                   flow_style=flow_style)
 
 
 def represent_dict(self, data):
     """Compact dicts"""
-    return self.represent_mapping("tag:yaml.org,2002:map", data, flow_style=False)
+    return self.represent_mapping("tag:yaml.org,2002:map",
+                                  data,
+                                  flow_style=False)
 
 
 CompactDumper.add_representer(list, represent_list)
@@ -182,9 +187,7 @@ def read_fenced_cell(token, cell_index, cell_type):
     except DirectiveParsingError as err:
         raise MystMetadataParsingError(
             "{0} cell {1} at line {2} could not be read: {3}".format(
-                cell_type, cell_index, token.map[0] + 1, err
-            )
-        )
+                cell_type, cell_index, token.map[0] + 1, err))
     return options, body_lines
 
 
@@ -197,24 +200,20 @@ def read_cell_metadata(token, cell_index):
         except Exception as err:
             raise MystMetadataParsingError(
                 "Markdown cell {0} at line {1} could not be read: {2}".format(
-                    cell_index, token.map[0] + 1, err
-                )
-            )
+                    cell_index, token.map[0] + 1, err))
         if not isinstance(metadata, dict):
             raise MystMetadataParsingError(
                 "Markdown cell {0} at line {1} is not a dict".format(
-                    cell_index, token.map[0] + 1
-                )
-            )
+                    cell_index, token.map[0] + 1))
 
     return metadata
 
 
 def myst_to_notebook(
-        text,
-        code_directive=CODE_DIRECTIVE,
-        raw_directive=RAW_DIRECTIVE,
-        add_source_map=False,
+    text,
+    code_directive=CODE_DIRECTIVE,
+    raw_directive=RAW_DIRECTIVE,
+    add_source_map=False,
 ):
     """Convert text written in the myst format to a notebook.
 
@@ -243,7 +242,8 @@ def myst_to_notebook(
         try:
             metadata_nb = yaml.safe_load(metadata.content)
         except (yaml.parser.ParserError, yaml.scanner.ScannerError) as error:
-            raise MystMetadataParsingError("Notebook metadata: {}".format(error))
+            raise MystMetadataParsingError(
+                "Notebook metadata: {}".format(error))
 
     # create an empty notebook
     nbf_version = nbf.v4
@@ -259,8 +259,7 @@ def myst_to_notebook(
         if md_source:
             source_map.append(start_line)
             notebook.cells.append(
-                nbf_version.new_markdown_cell(source=md_source, metadata=meta)
-            )
+                nbf_version.new_markdown_cell(source=md_source, metadata=meta))
 
     # iterate through the tokens to identify notebook cells
     nesting_level = 0
@@ -276,23 +275,25 @@ def myst_to_notebook(
 
         if token.type == "fence" and token.info.startswith(code_directive):
             _flush_markdown(md_start_line, token, md_metadata)
-            options, body_lines = read_fenced_cell(token, len(notebook.cells), "Code")
+            options, body_lines = read_fenced_cell(token, len(notebook.cells),
+                                                   "Code")
             meta = nbf.from_dict(options)
             source_map.append(token.map[0] + 1)
             notebook.cells.append(
-                nbf_version.new_code_cell(source="\n".join(body_lines), metadata=meta)
-            )
+                nbf_version.new_code_cell(source="\n".join(body_lines),
+                                          metadata=meta))
             md_metadata = {}
             md_start_line = token.map[1]
 
         elif token.type == "fence" and token.info.startswith(raw_directive):
             _flush_markdown(md_start_line, token, md_metadata)
-            options, body_lines = read_fenced_cell(token, len(notebook.cells), "Raw")
+            options, body_lines = read_fenced_cell(token, len(notebook.cells),
+                                                   "Raw")
             meta = nbf.from_dict(options)
             source_map.append(token.map[0] + 1)
             notebook.cells.append(
-                nbf_version.new_raw_cell(source="\n".join(body_lines), metadata=meta)
-            )
+                nbf_version.new_raw_cell(source="\n".join(body_lines),
+                                         metadata=meta))
             md_metadata = {}
             md_start_line = token.map[1]
 
@@ -309,7 +310,10 @@ def myst_to_notebook(
 
 
 def notebook_to_myst(
-        nb, code_directive=CODE_DIRECTIVE, raw_directive=RAW_DIRECTIVE, default_lexer=None,
+    nb,
+    code_directive=CODE_DIRECTIVE,
+    raw_directive=RAW_DIRECTIVE,
+    default_lexer=None,
 ):
     """Parse a notebook to a MyST formatted text document.
 
@@ -324,7 +328,8 @@ def notebook_to_myst(
     nb_metadata = from_nbnode(nb.metadata)
 
     # we add the pygments lexer as a directive argument, for use by syntax highlighters
-    pygments_lexer = nb_metadata.get("language_info", {}).get("pygments_lexer", None)
+    pygments_lexer = nb_metadata.get("language_info",
+                                     {}).get("pygments_lexer", None)
     if pygments_lexer is None:
         pygments_lexer = default_lexer
 
@@ -347,9 +352,8 @@ def notebook_to_myst(
             last_cell_md = True
 
         elif cell.cell_type in ["code", "raw"]:
-            string += "\n```{}".format(
-                code_directive if cell.cell_type == "code" else raw_directive
-            )
+            string += "\n```{}".format(code_directive if cell.cell_type ==
+                                       "code" else raw_directive)
             if pygments_lexer and cell.cell_type == "code":
                 string += " {}".format(pygments_lexer)
             string += "\n"
@@ -365,6 +369,7 @@ def notebook_to_myst(
             last_cell_md = False
 
         else:
-            raise NotImplementedError("cell {}, type: {}".format(i, cell.cell_type))
+            raise NotImplementedError("cell {}, type: {}".format(
+                i, cell.cell_type))
 
     return string.rstrip() + "\n"

@@ -8,20 +8,22 @@ from .utils import list_notebooks
 
 
 def test_combine():
-    nb_source = new_notebook(
-        cells=[new_markdown_cell('Markdown text'),
-               new_code_cell('a=3'),
-               new_code_cell('a+1'),
-               new_code_cell('a+1'),
-               new_markdown_cell('Markdown text'),
-               new_code_cell('a+2')])
+    nb_source = new_notebook(cells=[
+        new_markdown_cell('Markdown text'),
+        new_code_cell('a=3'),
+        new_code_cell('a+1'),
+        new_code_cell('a+1'),
+        new_markdown_cell('Markdown text'),
+        new_code_cell('a+2')
+    ])
 
-    nb_outputs = new_notebook(
-        cells=[new_markdown_cell('Markdown text'),
-               new_code_cell('a=3'),
-               new_code_cell('a+1'),
-               new_code_cell('a+2'),
-               new_markdown_cell('Markdown text')])
+    nb_outputs = new_notebook(cells=[
+        new_markdown_cell('Markdown text'),
+        new_code_cell('a=3'),
+        new_code_cell('a+1'),
+        new_code_cell('a+2'),
+        new_markdown_cell('Markdown text')
+    ])
 
     nb_outputs.cells[2].outputs = ['4']
     nb_outputs.cells[3].outputs = ['5']
@@ -37,7 +39,7 @@ def test_read_text_and_combine_with_outputs(tmpdir):
     tmp_ipynb = 'notebook.ipynb'
     tmp_script = 'notebook.py'
 
-    with(open(str(tmpdir.join(tmp_script)), 'w')) as fp:
+    with (open(str(tmpdir.join(tmp_script)), 'w')) as fp:
         fp.write("""# ---
 # jupyter:
 #   jupytext_formats: ipynb,py:light
@@ -50,7 +52,7 @@ def test_read_text_and_combine_with_outputs(tmpdir):
 3+3
 """)
 
-    with(open(str(tmpdir.join(tmp_ipynb)), 'w')) as fp:
+    with (open(str(tmpdir.join(tmp_ipynb)), 'w')) as fp:
         fp.write("""{
  "cells": [
   {
@@ -137,21 +139,23 @@ def test_combine_stable(nb_file):
 
 
 def test_combine_reorder():
-    nb_source = new_notebook(
-        cells=[new_markdown_cell('Markdown text'),
-               new_code_cell('1+1'),
-               new_code_cell('2+2'),
-               new_code_cell('3+3'),
-               new_markdown_cell('Markdown text'),
-               new_code_cell('4+4')])
+    nb_source = new_notebook(cells=[
+        new_markdown_cell('Markdown text'),
+        new_code_cell('1+1'),
+        new_code_cell('2+2'),
+        new_code_cell('3+3'),
+        new_markdown_cell('Markdown text'),
+        new_code_cell('4+4')
+    ])
 
-    nb_outputs = new_notebook(
-        cells=[new_markdown_cell('Markdown text'),
-               new_code_cell('2+2'),
-               new_code_cell('4+4'),
-               new_code_cell('1+1'),
-               new_code_cell('3+3'),
-               new_markdown_cell('Markdown text')])
+    nb_outputs = new_notebook(cells=[
+        new_markdown_cell('Markdown text'),
+        new_code_cell('2+2'),
+        new_code_cell('4+4'),
+        new_code_cell('1+1'),
+        new_code_cell('3+3'),
+        new_markdown_cell('Markdown text')
+    ])
 
     nb_outputs.cells[1].outputs = ['4']
     nb_outputs.cells[2].outputs = ['8']
@@ -171,8 +175,7 @@ def test_combine_split():
         cells=[new_code_cell('1+1'),
                new_code_cell('2+2')])
 
-    nb_outputs = new_notebook(
-        cells=[new_code_cell('1+1\n2+2')])
+    nb_outputs = new_notebook(cells=[new_code_cell('1+1\n2+2')])
 
     nb_outputs.cells[0].outputs = ['4']
 
@@ -183,15 +186,17 @@ def test_combine_split():
 
 
 def test_combine_refactor():
-    nb_source = new_notebook(
-        cells=[new_code_cell('a=1'),
-               new_code_cell('a+1'),
-               new_code_cell('a+2')])
+    nb_source = new_notebook(cells=[
+        new_code_cell('a=1'),
+        new_code_cell('a+1'),
+        new_code_cell('a+2')
+    ])
 
-    nb_outputs = new_notebook(
-        cells=[new_code_cell('b=1'),
-               new_code_cell('b+1'),
-               new_code_cell('b+2')])
+    nb_outputs = new_notebook(cells=[
+        new_code_cell('b=1'),
+        new_code_cell('b+1'),
+        new_code_cell('b+2')
+    ])
 
     nb_outputs.cells[1].outputs = ['2']
     nb_outputs.cells[2].outputs = ['3']

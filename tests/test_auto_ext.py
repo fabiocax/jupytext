@@ -4,7 +4,9 @@ from jupytext.formats import JupytextFormatError, auto_ext_from_metadata
 from .utils import list_notebooks
 
 
-@pytest.mark.parametrize('nb_file', list_notebooks('ipynb_R') + list_notebooks('ipynb_py'))
+@pytest.mark.parametrize('nb_file',
+                         list_notebooks('ipynb_R') + list_notebooks('ipynb_py')
+                         )
 def test_auto_in_fmt(nb_file):
     nb = read(nb_file)
     auto_ext = auto_ext_from_metadata(nb.metadata)
@@ -15,7 +17,8 @@ def test_auto_in_fmt(nb_file):
 
     nb2 = reads(text, fmt)
     assert nb2.metadata['jupytext']['text_representation']['extension']
-    assert nb2.metadata['jupytext']['text_representation']['format_name'] == 'percent'
+    assert nb2.metadata['jupytext']['text_representation'][
+        'format_name'] == 'percent'
 
     del nb.metadata['language_info']
     del nb.metadata['kernelspec']
@@ -38,7 +41,9 @@ def test_auto_from_kernelspecs_works(nb_file):
     assert auto_ext == expected_ext
 
 
-@pytest.mark.parametrize('nb_file', list_notebooks('ipynb_R') + list_notebooks('ipynb_py', skip='(World|plotly)'))
+@pytest.mark.parametrize('nb_file',
+                         list_notebooks('ipynb_R') +
+                         list_notebooks('ipynb_py', skip='(World|plotly)'))
 def test_auto_in_formats(nb_file):
     nb = read(nb_file)
     nb.metadata['jupytext'] = {'formats': 'ipynb,auto:percent'}

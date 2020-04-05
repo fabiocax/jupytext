@@ -78,7 +78,8 @@ def test_script_with_spyder_cell_is_percent(script="""#%%
     assert guess_format(script, '.py')[0] == 'percent'
 
 
-def test_script_with_percent_cell_and_magic_is_hydrogen(script="""#%%
+def test_script_with_percent_cell_and_magic_is_hydrogen(
+    script="""#%%
 %matplotlib inline
 """):
     assert guess_format(script, '.py')[0] == 'hydrogen'
@@ -128,25 +129,66 @@ def test_update_jupytext_formats_metadata():
 
 def test_decompress_formats():
     assert long_form_multiple_formats('ipynb') == [{'extension': '.ipynb'}]
-    assert long_form_multiple_formats('ipynb,md') == [{'extension': '.ipynb'}, {'extension': '.md'}]
-    assert long_form_multiple_formats('ipynb,py:light') == [{'extension': '.ipynb'},
-                                                            {'extension': '.py', 'format_name': 'light'}]
-    assert long_form_multiple_formats(['ipynb', '.py:light']) == [{'extension': '.ipynb'},
-                                                                  {'extension': '.py', 'format_name': 'light'}]
-    assert long_form_multiple_formats('.pct.py:percent') == [
-        {'extension': '.py', 'suffix': '.pct', 'format_name': 'percent'}]
+    assert long_form_multiple_formats('ipynb,md') == [{
+        'extension': '.ipynb'
+    }, {
+        'extension': '.md'
+    }]
+    assert long_form_multiple_formats('ipynb,py:light') == [{
+        'extension':
+        '.ipynb'
+    }, {
+        'extension':
+        '.py',
+        'format_name':
+        'light'
+    }]
+    assert long_form_multiple_formats(['ipynb', '.py:light']) == [{
+        'extension':
+        '.ipynb'
+    }, {
+        'extension':
+        '.py',
+        'format_name':
+        'light'
+    }]
+    assert long_form_multiple_formats('.pct.py:percent') == [{
+        'extension':
+        '.py',
+        'suffix':
+        '.pct',
+        'format_name':
+        'percent'
+    }]
 
 
 def test_compress_formats():
     assert short_form_multiple_formats([{'extension': '.ipynb'}]) == 'ipynb'
-    assert short_form_multiple_formats([{'extension': '.ipynb'}, {'extension': '.md'}]) == 'ipynb,md'
-    assert short_form_multiple_formats(
-        [{'extension': '.ipynb'}, {'extension': '.py', 'format_name': 'light'}]) == 'ipynb,py:light'
-    assert short_form_multiple_formats([{'extension': '.ipynb'},
-                                        {'extension': '.py', 'format_name': 'light'},
-                                        {'extension': '.md', 'comment_magics': True}]) == 'ipynb,py:light,md'
-    assert short_form_multiple_formats(
-        [{'extension': '.py', 'suffix': '.pct', 'format_name': 'percent'}]) == '.pct.py:percent'
+    assert short_form_multiple_formats([{
+        'extension': '.ipynb'
+    }, {
+        'extension': '.md'
+    }]) == 'ipynb,md'
+    assert short_form_multiple_formats([{
+        'extension': '.ipynb'
+    }, {
+        'extension': '.py',
+        'format_name': 'light'
+    }]) == 'ipynb,py:light'
+    assert short_form_multiple_formats([{
+        'extension': '.ipynb'
+    }, {
+        'extension': '.py',
+        'format_name': 'light'
+    }, {
+        'extension': '.md',
+        'comment_magics': True
+    }]) == 'ipynb,py:light,md'
+    assert short_form_multiple_formats([{
+        'extension': '.py',
+        'suffix': '.pct',
+        'format_name': 'percent'
+    }]) == '.pct.py:percent'
 
 
 def test_rearrange_jupytext_metadata():
@@ -164,19 +206,49 @@ def test_rearrange_jupytext_metadata():
 
 
 def test_rearrange_jupytext_metadata_metadata_filter():
-    metadata = {'jupytext': {'metadata_filter': {'notebook': {'additional': ['one', 'two'], 'excluded': 'all'},
-                                                 'cells': {'additional': 'all', 'excluded': ['three', 'four']}}}}
+    metadata = {
+        'jupytext': {
+            'metadata_filter': {
+                'notebook': {
+                    'additional': ['one', 'two'],
+                    'excluded': 'all'
+                },
+                'cells': {
+                    'additional': 'all',
+                    'excluded': ['three', 'four']
+                }
+            }
+        }
+    }
     rearrange_jupytext_metadata(metadata)
-    compare(metadata, {'jupytext': {'notebook_metadata_filter': 'one,two,-all',
-                                    'cell_metadata_filter': 'all,-three,-four'}})
+    compare(
+        metadata, {
+            'jupytext': {
+                'notebook_metadata_filter': 'one,two,-all',
+                'cell_metadata_filter': 'all,-three,-four'
+            }
+        })
 
 
 def test_rearrange_jupytext_metadata_add_dot_in_suffix():
-    metadata = {'jupytext': {'text_representation': {'jupytext_version': '0.8.6'},
-                             'formats': 'ipynb,pct.py,lgt.py'}}
+    metadata = {
+        'jupytext': {
+            'text_representation': {
+                'jupytext_version': '0.8.6'
+            },
+            'formats': 'ipynb,pct.py,lgt.py'
+        }
+    }
     rearrange_jupytext_metadata(metadata)
-    compare(metadata, {'jupytext': {'text_representation': {'jupytext_version': '0.8.6'},
-                                    'formats': 'ipynb,.pct.py,.lgt.py'}})
+    compare(
+        metadata, {
+            'jupytext': {
+                'text_representation': {
+                    'jupytext_version': '0.8.6'
+                },
+                'formats': 'ipynb,.pct.py,.lgt.py'
+            }
+        })
 
 
 def test_fix_139():

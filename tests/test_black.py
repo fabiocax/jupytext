@@ -89,7 +89,8 @@ def test_apply_black_through_jupytext(tmpdir, nb_file):
     # Load real notebook metadata to get the 'auto' extension in --pipe-fmt to work
     metadata = read(nb_file).metadata
 
-    nb_org = new_notebook(cells=[new_code_cell('1        +1')], metadata=metadata)
+    nb_org = new_notebook(cells=[new_code_cell('1        +1')],
+                          metadata=metadata)
     nb_black = new_notebook(cells=[new_code_cell('1 + 1')], metadata=metadata)
 
     os.makedirs(str(tmpdir.join('notebook_folder')))
@@ -116,8 +117,10 @@ def test_apply_black_through_jupytext(tmpdir, nb_file):
 
     # Map to another folder based on file name
     write(nb_org, tmp_ipynb)
-    jupytext([tmp_ipynb, '--from', 'notebook_folder//ipynb', '--to', 'script_folder//py:percent',
-              '--pipe', 'black', '--check', 'flake8'])
+    jupytext([
+        tmp_ipynb, '--from', 'notebook_folder//ipynb', '--to',
+        'script_folder//py:percent', '--pipe', 'black', '--check', 'flake8'
+    ])
     assert os.path.isfile(tmp_py)
     nb_now = read(tmp_py)
     nb_now.metadata = metadata
@@ -132,7 +135,8 @@ def test_apply_black_and_sync_on_paired_notebook(tmpdir, nb_file):
     metadata['jupytext'] = {'formats': 'ipynb,py'}
     assert 'language_info' in metadata
 
-    nb_org = new_notebook(cells=[new_code_cell('1        +1')], metadata=metadata)
+    nb_org = new_notebook(cells=[new_code_cell('1        +1')],
+                          metadata=metadata)
     nb_black = new_notebook(cells=[new_code_cell('1 + 1')], metadata=metadata)
 
     tmp_ipynb = str(tmpdir.join('notebook.ipynb'))
@@ -148,8 +152,11 @@ def test_apply_black_and_sync_on_paired_notebook(tmpdir, nb_file):
 
     nb_now = read(tmp_py)
     nb_now.metadata['jupytext'].pop('text_representation')
-    nb_black.metadata = {key: nb_black.metadata[key] for key in nb_black.metadata
-                         if key in _DEFAULT_NOTEBOOK_METADATA.split(',')}
+    nb_black.metadata = {
+        key: nb_black.metadata[key]
+        for key in nb_black.metadata
+        if key in _DEFAULT_NOTEBOOK_METADATA.split(',')
+    }
     compare(nb_now, nb_black)
 
 
@@ -190,14 +197,13 @@ jupyter:
 
 
 @requires_black
-def test_black_through_tempfile(
-        tmpdir,
-        text="""```python
+def test_black_through_tempfile(tmpdir,
+                                text="""```python
 1 +    2 \
 + 3
 ```
 """,
-        black="""```python
+                                black="""```python
 1 + 2 + 3
 ```
 """):

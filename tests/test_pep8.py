@@ -153,8 +153,10 @@ def f(x):
     compare(text2, text)
 
 
-@pytest.mark.parametrize('py_file', [py_file for py_file in list_notebooks('../jupytext') + list_notebooks('.') if
-                                     py_file.endswith('.py') and 'folding_markers' not in py_file])
+@pytest.mark.parametrize('py_file', [
+    py_file for py_file in list_notebooks('../jupytext') + list_notebooks('.')
+    if py_file.endswith('.py') and 'folding_markers' not in py_file
+])
 def test_no_metadata_when_py_is_pep8(py_file):
     """This test assumes that all Python files in the jupytext folder follow PEP8 rules"""
     nb = read(py_file)

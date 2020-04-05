@@ -4,8 +4,7 @@ import jupytext
 
 # region Folding markers as cell boundaries
 # region Sub-region with metadata {"key": "value"}
-def test_mark_cell_with_vim_folding_markers(
-        script="""# This is a markdown cell
+def test_mark_cell_with_vim_folding_markers(script="""# This is a markdown cell
 
 # {{{ And this is a foldable code region with metadata {"key": "value"}
 a = 1
@@ -22,7 +21,10 @@ c = 3
     assert nb.cells[0].source == 'This is a markdown cell'
     assert nb.cells[1].cell_type == 'code'
     assert nb.cells[1].source == 'a = 1\n\nb = 2\n\nc = 3'
-    assert nb.cells[1].metadata == {'title': 'And this is a foldable code region with metadata', 'key': 'value'}
+    assert nb.cells[1].metadata == {
+        'title': 'And this is a foldable code region with metadata',
+        'key': 'value'
+    }
 
     script2 = jupytext.writes(nb, 'py')
     compare(script2, script)
@@ -32,7 +34,7 @@ c = 3
 
 
 def test_mark_cell_with_vscode_pycharm_folding_markers(
-        script="""# This is a markdown cell
+    script="""# This is a markdown cell
 
 # region And this is a foldable code region with metadata {"key": "value"}
 a = 1
@@ -48,14 +50,17 @@ c = 3
     assert nb.cells[0].source == 'This is a markdown cell'
     assert nb.cells[1].cell_type == 'code'
     assert nb.cells[1].source == 'a = 1\n\nb = 2\n\nc = 3'
-    assert nb.cells[1].metadata == {'title': 'And this is a foldable code region with metadata', 'key': 'value'}
+    assert nb.cells[1].metadata == {
+        'title': 'And this is a foldable code region with metadata',
+        'key': 'value'
+    }
 
     script2 = jupytext.writes(nb, 'py')
     compare(script2, script)
 
 
 def test_mark_cell_with_no_title_and_inner_region(
-        script="""# This is a markdown cell
+    script="""# This is a markdown cell
 
 # region {"key": "value"}
 a = 1
@@ -96,8 +101,7 @@ d = 4
 # endregion
 
 
-def test_adjacent_regions(
-        script="""# region global
+def test_adjacent_regions(script="""# region global
 # region innermost
 a = 1
 
@@ -118,8 +122,7 @@ b = 2
     compare(script2, script)
 
 
-def test_indented_markers_are_ignored(
-        script="""# region global
+def test_indented_markers_are_ignored(script="""# region global
     # region indented
 a = 1
 
